@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run every semiconductor tool's software fixture tests, without dependencies."""
+"""Run semiconductor tool and end-to-end example fixture tests, without dependencies."""
 from pathlib import Path
 import subprocess
 import sys
@@ -10,10 +10,12 @@ SUITES = ("iv-readpoint", "rram-window", "tlm-extract", "vth-constant-current")
 
 def main():
     failures = []
-    for tool in SUITES:
+    suites = [(tool, ROOT / "tools" / tool / "tests") for tool in SUITES]
+    suites.append(("measurement-to-features", ROOT / "examples" / "measurement-to-features" / "tests"))
+    for tool, tests in suites:
         print("\n=== " + tool + " ===", flush=True)
         result = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s",
-                                 str(ROOT / "tools" / tool / "tests"), "-v"], cwd=ROOT)
+                                 str(tests), "-v"], cwd=ROOT)
         if result.returncode:
             failures.append(tool)
     print("\n" + ("Failed: " + ", ".join(failures) if failures else "All semiconductor software fixture suites passed."), flush=True)

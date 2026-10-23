@@ -92,6 +92,27 @@ features and exclusions together: inspect its counts and warnings, not just
 whether JSON was produced. A write failure may leave an incomplete new file; discard it after a
 fatal exit. None of the programs sends data anywhere or changes the input file.
 
+## End-to-end RRAM feature example
+
+The [measurement-to-features example](examples/measurement-to-features/README.md)
+connects two existing tools: declared HRS/LRS I–V branches → signed readpoints →
+explicit positive static `V/I` resistance → paired RRAM windows → **one row per
+physical-device ID**. Repeated cycles stay within devices; batch and condition
+metadata, source-row lineage and a predictor allowlist accompany the feature CSV.
+Missing/duplicate joins and condition changes fail rather than being filled in.
+
+```sh
+python3 examples/measurement-to-features/build_features.py \
+  --input-dir examples/measurement-to-features/fixtures \
+  --output-dir /tmp/invented-rram-features \
+  --max-bracket-span-V 0.11 --accept-measurement-assumptions
+```
+
+Choose a new output directory. The original deterministic generator and its
+invented six-device fixtures are included; the example accepts SI inputs only.
+Read its assumptions before adapting laboratory data. It is a two-tool workflow,
+not a fifth measurement tool, a trained ML model, or real-device validation.
+
 ## A semiconductor feature workflow
 
 1. **Preserve the measurement context.** Keep device/wafer/lot provenance,
@@ -156,11 +177,12 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all four isolated `unittest` suites. They cover
+Run `python3 run_tests.py` to execute all four isolated tool suites plus the
+end-to-end example suite. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
-fixed bias/temperature declarations, missing and invalid data, deliberate
-output, and no-overwrite safety.
+fixed bias/temperature declarations, missing and invalid data, strict feature-table
+joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not
 hardware accuracy, scientific validity, or real-device performance.
 
@@ -170,8 +192,8 @@ These are proposed directions, **not implemented capabilities**:
 
 - Additional MOSFET transfer-curve features beyond the implemented constant-
   current criterion, with explicit bias conditions and documented definitions.
-- Semiconductor-specific grouped feature tables that preserve wafer/device/lot
-  provenance and distinguish repeated sweeps from independent devices.
+- Grouped feature-table workflows beyond the strict complete-pair RRAM example,
+  with explicit handling of missingness, censoring and other sampling designs.
 - RRAM cycle/retention diagnostics with explicit censoring and physical stopping
   criteria, without extrapolated lifetime claims.
 - Measurement-uncertainty propagation and instrument compliance/noise-floor
