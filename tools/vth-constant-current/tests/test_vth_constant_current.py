@@ -84,6 +84,7 @@ class ThresholdTests(unittest.TestCase):
         self.assertEqual(extraction["bracket_span_V"], .4)
         self.assertEqual(extraction["source_rows"], [3, 4])
         self.assertEqual(extraction["bracket_drain_current_A"], [.2e-6, 1.8e-6])
+        self.assertNotIn("binary64_rounding_hides_interior_interpolation_fraction", result["warnings"])
 
     def test_descending_acquisition_bracket_preserved(self):
         result = self.single(self.body(vg=(1.2, .8, .4, 0), current=(4.5, 1.8, .2, 0)))
@@ -111,6 +112,7 @@ class ThresholdTests(unittest.TestCase):
         self.assertEqual(extraction["source_rows"], [3])
         self.assertEqual(extraction["bracket_span_V"], 0)
         self.assertIsNone(extraction["fraction_from_first_to_second_sample"])
+        self.assertNotIn("binary64_rounding_hides_interior_interpolation_fraction", result["warnings"])
 
     def test_exact_endpoint_hits(self):
         for currents, voltage in (((1, 2, 3), 0), ((0, .5, 1), 2)):
@@ -255,8 +257,74 @@ class ThresholdTests(unittest.TestCase):
         self.assertEqual(result["extraction"]["bracket_span_V"], 2e150)
 
     def test_derived_nonzero_underflow_rejected(self):
-        self.rejected("derived_numeric_range_error", self.body(vg=(0, "1e-150"), current=("1e-150", "1e150")),
-                      current_unit="A", criterion_current="2e-150", criterion_current_unit="A")
+        for gate_sign in ("", "-"):
+            for current_sign, polarity in (("", "positive"), ("-", "negative")):
+                for criterion in ("2e-150", "1.0000000000000000000000000000001e-150"):
+                    for reverse in (False, True):
+                        with self.subTest(gate_sign=gate_sign, polarity=polarity,
+                                          criterion=criterion, reverse=reverse):
+                            vg = ("0", gate_sign + "1e-150")
+                            current = (current_sign + "1e-150", current_sign + "1e150")
+                            if reverse:
+                                vg, current = vg[::-1], current[::-1]
+                            self.rejected("derived_numeric_range_error", self.body(vg=vg, current=current),
+                                          current_unit="A", criterion_current=current_sign + criterion,
+                                          criterion_current_unit="A", current_polarity=polarity)
+
+    def test_fraction_underflow_keeps_representable_threshold_in_both_orders(self):
+        expected = float(Fraction(10 ** 119, 10 ** 300 - 1))
+        self.assertEqual(expected, 1e-181)
+        warning = "binary64_rounding_hides_interior_interpolation_fraction"
+        for gate_sign in ("", "-"):
+            for current_sign, polarity in (("", "positive"), ("-", "negative")):
+                for reverse in (False, True):
+                    with self.subTest(gate_sign=gate_sign, polarity=polarity, reverse=reverse):
+                        vg = ("0", gate_sign + "1e150")
+                        current = (current_sign + "1e-150", current_sign + "1e150")
+                        if reverse:
+                            vg, current = vg[::-1], current[::-1]
+                        result = self.single(self.body(vg=vg, current=current), current_unit="A",
+                            criterion_current=current_sign + "1.0000000000000000000000000000001e-150",
+                            criterion_current_unit="A", current_polarity=polarity)
+                        self.assertEqual(result["status"], "ok")
+                        extraction = result["extraction"]
+                        self.assertEqual(extraction["gate_source_voltage_at_criterion_V"],
+                                         -expected if gate_sign else expected)
+                        self.assertEqual(extraction["fraction_from_first_to_second_sample"],
+                                         1.0 if reverse else 0.0)
+                        self.assertEqual(extraction["method"], "linear_current_interpolation")
+                        self.assertEqual(extraction["source_rows"], [2, 3])
+                        self.assertEqual(extraction["bracket_gate_source_voltage_V"], list(map(float, vg)))
+                        self.assertEqual(extraction["bracket_drain_current_A"], list(map(float, current)))
+                        self.assertIn(warning, result["warnings"])
+                        json.dumps(result, allow_nan=False)
+
+    def test_representable_subnormal_threshold_in_both_orders(self):
+        for reverse in (False, True):
+            with self.subTest(reverse=reverse):
+                vg, current = ("0", "1e-150"), ("1e-150", "1e150")
+                if reverse:
+                    vg, current = vg[::-1], current[::-1]
+                result = self.single(self.body(vg=vg, current=current), current_unit="A",
+                                     criterion_current="1e-23", criterion_current_unit="A")
+                self.assertEqual(result["status"], "ok")
+                self.assertEqual(result["extraction"]["gate_source_voltage_at_criterion_V"], 1e-323)
+
+    def test_cli_fraction_underflow_order_invariance(self):
+        for reverse in (False, True):
+            with self.subTest(reverse=reverse):
+                vg, current = ("0", "1e150"), ("1e-150", "1e150")
+                if reverse:
+                    vg, current = vg[::-1], current[::-1]
+                result = self.cli(["--stdout"], self.body(vg=vg, current=current), overrides=(
+                    "--current-unit", "A", "--criterion-current",
+                    "1.0000000000000000000000000000001e-150", "--criterion-current-unit", "A"))
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.stderr, "")
+                report = json.loads(result.stdout)
+                self.assertEqual(report["counts"]["extracted_groups"], 1)
+                self.assertEqual(report["counts"]["rejected_groups"], 0)
+                self.assertEqual(report["results"][0]["extraction"]["gate_source_voltage_at_criterion_V"], 1e-181)
 
     def test_number_boundaries_after_unit_conversion(self):
         self.assertEqual(vth.number("1e-150", "1"), Fraction(1, 10 ** 150))

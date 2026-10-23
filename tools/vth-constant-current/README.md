@@ -201,9 +201,15 @@ Only regular files are read, using a nonblocking open to avoid FIFO hangs.
 Limits are 8 MiB input, 10,000 rows, 1,000 groups and 1,000 rows per group. These
 are resource bounds, not meaningful laboratory limits. Exact rational arithmetic
 handles unit conversion, equality, ordering and interpolation without binary64
-cancellation. Final JSON numbers are rounded binary64. Nonzero derived underflow
-and overflow reject the group rather than printing zero or infinity. Distinct
-exact input gate voltages/currents that collapse to the same JSON number carry
+cancellation. Final JSON numbers are rounded binary64. Nonzero derived physical
+values that underflow, and any overflow, reject the group rather than printing
+zero or infinity. The dimensionless interpolation fraction is an exception: a
+strictly interior exact fraction may round to `0` or `1`, with the warning
+`binary64_rounding_hides_interior_interpolation_fraction`. The threshold is still
+computed with the exact fraction, not this rounded diagnostic, so reversing the
+same bracket does not change whether its physical result is representable.
+An endpoint-rounded fraction does not turn an interpolation into a measured hit.
+Distinct exact input gate voltages/currents that collapse to the same JSON number carry
 explicit rounding warnings; an interpolated criterion that rounds to a bracket
 endpoint also warns. These warnings do not repair inadequate measurement
 resolution, and JSON numbers alone may not reproduce exact-decimal decisions.

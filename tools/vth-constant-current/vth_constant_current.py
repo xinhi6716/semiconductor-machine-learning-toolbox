@@ -201,10 +201,13 @@ def extract_group(key, points, criterion, current_polarity, max_span=None):
             weight = (criterion - a["id"]) / (b["id"] - a["id"])
             threshold = a["vgs"] + weight * (b["vgs"] - a["vgs"])
             method = "linear_current_interpolation"
+        # A strict exact crossing guarantees 0 < weight < 1. Its diagnostic
+        # binary64 value may round to either endpoint, but must not determine
+        # whether the independently converted exact threshold is representable.
         extraction = {"method": method, "gate_source_voltage_at_criterion_V": finite_float(threshold),
                       "signed_current_criterion_A": finite_float(criterion),
                       "bracket_span_V": finite_float(span),
-                      "fraction_from_first_to_second_sample": finite_float(weight) if not exact else None,
+                      "fraction_from_first_to_second_sample": float(weight) if not exact else None,
                       "source_rows": [p["source_row"] for p in source],
                       "bracket_gate_source_voltage_V": [finite_float(p["vgs"]) for p in source],
                       "bracket_drain_current_A": [finite_float(p["id"]) for p in source]}
@@ -212,6 +215,8 @@ def extract_group(key, points, criterion, current_polarity, max_span=None):
         return reject("derived_numeric_range_error")
     if not exact:
         result["warnings"].append("local_linear_interpolation_is_not_measurement_uncertainty")
+        if extraction["fraction_from_first_to_second_sample"] in (0.0, 1.0):
+            result["warnings"].append("binary64_rounding_hides_interior_interpolation_fraction")
         if finite_float(criterion) in [finite_float(p["id"]) for p in source]:
             result["warnings"].append("binary64_rounding_hides_criterion_bracket_separation")
     result.update({"status": "ok", "extraction": extraction})
