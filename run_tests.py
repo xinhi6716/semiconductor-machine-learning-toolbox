@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-SUITES = ("iv-readpoint", "rram-window", "tlm-extract", "vth-constant-current", "hall-response", "sweep-segments")
+SUITES = ("iv-readpoint", "rram-window", "tlm-extract", "vth-constant-current", "hall-response", "sweep-segments", "transfer-log-slope")
 
 
 def main():

@@ -7,7 +7,8 @@ CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 The usable core covers semiconductor I–V measurements, resistive RAM
 (RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
 measurements, constant-current transfer-sweep criteria, and Hall-response
-diagnostics, plus an ordered sweep-coordinate audit. All six command-line tools
+diagnostics, plus an ordered sweep-coordinate audit and user-windowed transfer
+log-current fitting. All seven command-line tools
 use only the Python standard library, require explicit units and preserve
 measurement provenance. They make validation limits explicit instead of silently
 repairing questionable measurements.
@@ -58,6 +59,13 @@ All included measurements are invented software-test fixtures.
    acquisition chronology, cycles, independent observations or physical hysteresis;
    no automatic branch export or handoff to the extractors.
 
+7. **[User-Windowed Transfer Log-Slope](tools/transfer-log-slope/README.md)**
+   Fit log10 of explicitly declared-polarity drain current versus VGS over one
+   user-supplied voltage window, separately by device/condition/replicate/branch.
+   Keep every source row and window decision; report signed decades/V slope,
+   residuals and labeled signed/magnitude reciprocal. No best-window search,
+   sign repair, point trimming or automatic subthreshold-regime certification.
+
 ## Quick start
 
 For tool selection, adapting laboratory CSV exports, and checked end-to-end
@@ -97,10 +105,16 @@ python3 tools/sweep-segments/sweep_segments.py \
   tools/sweep-segments/examples/synthetic_hall_coordinates.csv \
   --axis magnetic-flux-density --coordinate-unit mT --stdout
 
+python3 tools/transfer-log-slope/transfer_log_slope.py \
+  tools/transfer-log-slope/examples/synthetic_transfer.csv \
+  --voltage-unit V --current-unit nA --current-polarity positive \
+  --window-min 0.1 --window-max 0.4 --accept-log-transfer-assumptions --stdout
+
 python3 run_tests.py
 ```
 
-The I–V, TLM, threshold-criterion, Hall-response and sweep-audit fixtures exit `0`.
+The I–V, TLM, threshold-criterion, Hall-response, sweep-audit and transfer-log-slope
+fixtures exit `0`.
 The RRAM fixture deliberately includes missing/invalid pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
@@ -189,6 +203,12 @@ wiring/field-axis protocol. Its least-squares slope and intercept are descriptiv
 not a validated physical Hall model. A zero-current group is a voltage-background
 diagnostic only; no carrier density, type, mobility or thickness is inferred.
 
+Transfer log-slope uses an explicit voltage window, all measured samples inside
+it and a declared current polarity. Its signed reciprocal can support a
+separately justified subthreshold analysis, but neither a good fit nor a small
+reciprocal certifies the regime. Window choice, noise floor and physical
+interpretation remain the user's responsibility; every row stays auditable.
+
 ## Guardrails and limitations
 
 - Only explicitly declared units are converted. Unit or state inference is absent.
@@ -213,11 +233,12 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all six isolated tool suites plus the
+Run `python3 run_tests.py` to execute all seven isolated tool suites plus the
 end-to-end example suite. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
-fixed bias/temperature declarations, signed Hall fits and residuals, exact
+fixed bias/temperature declarations, signed Hall fits and residuals, user-windowed
+base-10 transfer fits and selection audits, exact
 coordinate edge partitions and shared sample identities, missing and
 invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
@@ -229,7 +250,8 @@ hardware accuracy, scientific validity, or real-device performance.
 These are proposed directions, **not implemented capabilities**:
 
 - Additional MOSFET transfer-curve features beyond the implemented constant-
-  current criterion, with explicit bias conditions and documented definitions.
+  current criterion and user-windowed log slope, with explicit bias conditions
+  and documented definitions.
 - Grouped feature-table workflows beyond the strict complete-pair RRAM example,
   with explicit handling of missingness, censoring and other sampling designs.
 - RRAM cycle/retention diagnostics with explicit censoring and physical stopping

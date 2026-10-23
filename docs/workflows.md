@@ -18,6 +18,7 @@ behavior, not measurement accuracy, physical mechanisms, or device performance.
 | Total contact-pair resistances at known gaps and width in a conventional rectangular TLM structure | [Linear TLM](../tools/tlm-extract/README.md) | Sheet resistance and per-contact resistance under the declared linear-TLM assumptions. |
 | Transfer sweeps with known source-referenced biases and temperature | [Current-criterion Vth](../tools/vth-constant-current/README.md) | Signed VGS where signed ID reaches your declared current criterion. |
 | Signed transverse voltage versus magnetic flux density with fixed current, temperature and known wiring/field axis | [Hall response](../tools/hall-response/README.md) | Descriptive signed slope/intercept and residuals; current-normalized apparent sensitivity only at nonzero current. |
+| Transfer sweeps with a scientifically justified, explicitly chosen voltage window | [Transfer log-slope](../tools/transfer-log-slope/README.md) | Descriptive log10-current slope and labeled reciprocal, not a certified subthreshold swing. |
 | Ordered voltage or magnetic-flux-density samples whose direction changes need inspection | [Sweep segment audit](../tools/sweep-segments/README.md) | Exact contiguous edge runs and shared-endpoint identities; no inferred chronology or automatically valid physical branches. |
 | Declared HRS/LRS I–V branches plus complete device and condition records | [RRAM feature example](../examples/measurement-to-features/README.md) | A strict two-tool workflow ending in one descriptive feature row per device. |
 
@@ -26,7 +27,7 @@ These quantities are not interchangeable. Static `I/V` is not differential
 an isolated contact property. A resistance ratio does not identify a switching
 mechanism. Criterion Vth is an operational definition, not a universal physical
 threshold. Hall response is not a carrier density or mobility measurement. The
-feature example does not combine TLM, Vth or Hall data with RRAM data,
+feature example does not combine TLM, Vth, Hall or transfer-log-slope data with RRAM data,
 and none of these workflows trains or validates an ML model.
 
 ## 2. Adapt an instrument export without losing its meaning
@@ -109,6 +110,11 @@ The tools differ in blank-row and numeric-error handling; consult their linked
 CSV contracts rather than assuming one parser policy applies to every tool.
 The optional sweep audit uses its own coordinate-only schema and strict
 contiguous sequence contract; see its [input contract](../tools/sweep-segments/README.md#input-contract).
+
+The [transfer-log-slope tool](../tools/transfer-log-slope/README.md) uses the same
+11-column transfer schema as current-criterion Vth, but requires at least three
+selected samples and a user-chosen voltage window. Do not automatically reuse
+a threshold bracket as a physically justified subthreshold window.
 
 ## 3. Run and inspect the five supplied fixtures
 
@@ -255,6 +261,33 @@ Nonzero residuals may reflect noise, curvature, rounding or drift, while zero
 residuals cannot validate Hall physics. No carrier density, mobility, thickness or
 carrier sign is inferred. See the tool's README for the full scope boundary.
 
+### Optional: inspect a declared transfer log-current window
+
+This separate example adds no automatic handoff to the five-tool checks below:
+
+```sh
+python3 tools/transfer-log-slope/transfer_log_slope.py \
+  tools/transfer-log-slope/examples/synthetic_transfer.csv \
+  --voltage-unit V --current-unit nA --current-polarity positive \
+  --window-min 0.1 --window-max 0.4 \
+  --accept-log-transfer-assumptions --output "$RUN_DIR/transfer-log.json"
+```
+
+Expected exit: `0`. Four branches remain separate; 16 of 24 invented points are
+fitted and all eight outside-window rows remain auditable. Invented A's two
+branches both give `10 decades/V` and a signed reciprocal `100 mV/decade`;
+invented B retains curvature residuals; invented C keeps `-10 decades/V` and
+signed reciprocal `-100 mV/decade`. The separate reciprocal magnitude does not
+replace that sign or certify a subthreshold swing.
+
+Both window bounds use the input voltage unit, are inclusive, and select only
+measured points. Selected zero/wrong-sign currents reject the group rather than
+being removed; nonmonotonic current stays in the fit with a warning. Review
+`observations`, `selected_source_rows`, `outside_window_source_rows`, residuals,
+actual selected ranges and `warnings`. The original numeric cell text and input
+hash accompany the report. There is no search for an attractive window and no
+automatic determination of the subthreshold regime, noise floor or compliance.
+
 ### Check the arithmetic and inspect actual report fields
 
 This check is specific to the supplied fixtures. It prints counts and verifies
@@ -400,7 +433,7 @@ example; do not discard devices until it passes.
 
 ## 5. Review warnings before downstream use
 
-For the five measurement CLIs, exit `0` means all selected groups passed that
+For the six measurement CLIs, exit `0` means all selected groups passed that
 tool's documented checks; `1` means a report contains rejected/excluded groups;
 `2` means a fatal CLI, schema, input or output error. The feature builder uses
 `0` for completion and `2` for failure. None of these codes is a scientific
@@ -416,6 +449,7 @@ singletons and coordinate reversals are retained and described, not exclusions.
 | Ratio below one | Retain the value and flag; review state preparation and labeling without automatically swapping them. |
 | TLM extrapolation, repeated gaps, or replicate warnings | Inspect sampled geometry, row weighting and residuals. High R-squared does not validate contacts, remove parasitics or bound intercept uncertainty. |
 | Hall residuals, zero-current normalization or zero-field extrapolation warnings | Inspect the full branch and protocol. A slope/intercept is descriptive, not validated Hall physics or a corrected transport property. |
+| Transfer log-slope selection, residual or polarity warning | Review all retained rows, window rationale and physical regime. A reciprocal is not a certified subthreshold swing; do not trim or retune just to improve the result. |
 | Binary64 rounding warning | Retain exact original numeric text and inspect the specific issue. Printed JSON precision cannot establish measurement resolution. |
 
 Save real reports deliberately: `--output` refuses an existing path, including a
@@ -442,8 +476,8 @@ meaningful model evaluation, causal claim, endurance or lifetime estimate.
 python3 run_tests.py
 ```
 
-The current suite has 309 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
-50 Hall-response, 36 sweep-audit and 27 end-to-end feature tests.
+The current suite has 359 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
+50 Hall-response, 36 sweep-audit, 50 transfer-log-slope and 27 end-to-end feature tests.
 The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain
 unverified here. The tests cover software contracts and invented examples, not
