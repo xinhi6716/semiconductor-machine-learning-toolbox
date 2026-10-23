@@ -1,0 +1,750 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:semiconductor-toolbox:iv-loop-integral:report:1",
+  "title": "Ordered I-V Signed-Path Integral Report",
+  "description": "README.md semantic invariants are mandatory in addition to this structural schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "tool": {
+      "const": "iv-loop-integral"
+    },
+    "version": {
+      "const": "0.1.0"
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "voltage_unit": {
+          "enum": [
+            "V",
+            "mV",
+            "uV",
+            "nV"
+          ]
+        },
+        "current_unit": {
+          "enum": [
+            "A",
+            "mA",
+            "uA",
+            "nA",
+            "pA"
+          ]
+        },
+        "accept_supplied_path_assumptions": {
+          "const": true
+        },
+        "closure_rule": {
+          "const": "exact_voltage_endpoints_no_added_edge"
+        },
+        "arithmetic": {
+          "const": "exact_decimal_to_rational_then_binary64_summary"
+        },
+        "branch_rule": {
+          "const": "explicit_outgoing_edge_labels_contiguous_nonreversing"
+        }
+      },
+      "required": [
+        "voltage_unit",
+        "current_unit",
+        "accept_supplied_path_assumptions",
+        "closure_rule",
+        "arithmetic",
+        "branch_rule"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "input_byte_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8388608
+        },
+        "group_columns": {
+          "const": [
+            "lot",
+            "wafer",
+            "device",
+            "condition",
+            "cycle",
+            "replicate"
+          ]
+        },
+        "source_record_convention": {
+          "const": "one-based data record index excluding header"
+        },
+        "source_line_convention": {
+          "const": "one-based physical CSV lines including header"
+        },
+        "sample_index_convention": {
+          "const": "one-based within declared loop"
+        },
+        "edge_index_convention": {
+          "const": "edge i joins sample i to sample i+1; no added edge"
+        }
+      },
+      "required": [
+        "input_sha256",
+        "input_byte_count",
+        "group_columns",
+        "source_record_convention",
+        "source_line_convention",
+        "sample_index_convention",
+        "edge_index_convention"
+      ]
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_samples": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "input_loops": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "usable_loops": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "rejected_loops": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "input_edges": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "input_branch_blocks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "input_samples",
+        "input_loops",
+        "usable_loops",
+        "rejected_loops",
+        "input_edges",
+        "input_branch_blocks"
+      ]
+    },
+    "assumptions_and_limits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096
+      },
+      "minItems": 1,
+      "maxItems": 32
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/result"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    }
+  },
+  "required": [
+    "schema_version",
+    "tool",
+    "version",
+    "parameters",
+    "provenance",
+    "counts",
+    "assumptions_and_limits",
+    "results"
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+(?![\\s\\S])",
+      "description": "Opaque nonempty ID, no ASCII control at any position; strict end-of-input. No leading/trailing whitespace is also required by the normative input contract."
+    },
+    "exactDecimal": {
+      "type": "string",
+      "maxLength": 1024,
+      "pattern": "^(?:0|-?[1-9](?:\\.[0-9]*[1-9])?e(?:\\+(?:0|[1-9][0-9]*)|-[1-9][0-9]*))(?![\\s\\S])",
+      "description": "Canonical exact decimal: zero is 0; nonzero exponent zero is +0, never -0. Strict end-of-input rejects any trailing character, including newline."
+    },
+    "finiteNumber": {
+      "type": "number",
+      "minimum": -1.7976931348623157e+308,
+      "maximum": 1.7976931348623157e+308
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lot": {
+          "$ref": "#/$defs/identifier"
+        },
+        "wafer": {
+          "$ref": "#/$defs/identifier"
+        },
+        "device": {
+          "$ref": "#/$defs/identifier"
+        },
+        "condition": {
+          "$ref": "#/$defs/identifier"
+        },
+        "cycle": {
+          "$ref": "#/$defs/identifier"
+        },
+        "replicate": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "required": [
+        "lot",
+        "wafer",
+        "device",
+        "condition",
+        "cycle",
+        "replicate"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "branch_to_next": {
+          "oneOf": [
+            {
+              "const": ""
+            },
+            {
+              "$ref": "#/$defs/identifier"
+            }
+          ]
+        },
+        "voltage_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "current_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "voltage_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        },
+        "current_A_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        },
+        "source_record_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "source_line_start": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "source_line_end": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "branch_block_indices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "minItems": 0,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "sample_index",
+        "sample_id",
+        "branch_to_next",
+        "voltage_text",
+        "current_text",
+        "voltage_V_exact",
+        "current_A_exact",
+        "source_record_index",
+        "source_line_start",
+        "source_line_end",
+        "branch_block_indices"
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "edge_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "left_sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "right_sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "branch_block_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "branch_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "direction": {
+          "enum": [
+            "increasing",
+            "decreasing",
+            "flat"
+          ]
+        },
+        "delta_voltage_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        },
+        "trapezoid_A_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        }
+      },
+      "required": [
+        "edge_index",
+        "left_sample_index",
+        "right_sample_index",
+        "branch_block_index",
+        "branch_id",
+        "direction",
+        "delta_voltage_V_exact",
+        "trapezoid_A_V_exact"
+      ]
+    },
+    "branchAudit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "branch_block_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "branch_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "edge_start": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "edge_end": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "sample_indices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 1000
+        },
+        "direction": {
+          "enum": [
+            "increasing",
+            "decreasing",
+            "flat",
+            "mixed"
+          ]
+        },
+        "flat_edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "signed_path_integral_A_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        },
+        "signed_path_integral_A_V": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/finiteNumber"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "branch_block_index",
+        "branch_id",
+        "edge_start",
+        "edge_end",
+        "edge_count",
+        "sample_indices",
+        "direction",
+        "flat_edge_count",
+        "signed_path_integral_A_V_exact",
+        "signed_path_integral_A_V"
+      ]
+    },
+    "sharedEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "branch_block_indices": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "sample_index",
+        "sample_id",
+        "branch_block_indices"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "signed_path_integral_A_V": {
+          "$ref": "#/$defs/finiteNumber"
+        },
+        "signed_path_integral_A_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        }
+      },
+      "required": [
+        "signed_path_integral_A_V",
+        "signed_path_integral_A_V_exact"
+      ]
+    },
+    "closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "voltage_endpoint_difference_V_exact": {
+          "$ref": "#/$defs/exactDecimal",
+          "description": "Exact SI voltage of final retained observation minus first retained observation: V_last - V_first, in volts."
+        },
+        "current_endpoint_difference_A_exact": {
+          "$ref": "#/$defs/exactDecimal",
+          "description": "Exact SI current of final retained observation minus first retained observation: I_last - I_first, in amperes."
+        },
+        "voltage_closed_exact": {
+          "type": "boolean"
+        },
+        "current_endpoints_equal_exact": {
+          "type": "boolean"
+        },
+        "iv_endpoint_closed_exact": {
+          "type": "boolean"
+        },
+        "added_closure_edge": {
+          "const": false
+        }
+      },
+      "required": [
+        "voltage_endpoint_difference_V_exact",
+        "current_endpoint_difference_A_exact",
+        "voltage_closed_exact",
+        "current_endpoints_equal_exact",
+        "iv_endpoint_closed_exact",
+        "added_closure_edge"
+      ]
+    },
+    "featureAvailability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "earliest_required_sample_index": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "earliest_required_sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "time_verified": {
+          "const": false
+        },
+        "prediction_eligibility": {
+          "const": "not_established"
+        },
+        "required_boundary": {
+          "const": "complete_feature_available_at_or_before_prediction_origin_and_target_strictly_after_origin"
+        }
+      },
+      "required": [
+        "earliest_required_sample_index",
+        "earliest_required_sample_id",
+        "time_verified",
+        "prediction_eligibility",
+        "required_boundary"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "status": {
+          "enum": [
+            "usable",
+            "rejected"
+          ]
+        },
+        "rejection_reasons": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "insufficient_samples",
+              "zero_voltage_span",
+              "voltage_endpoints_not_equal",
+              "noncontiguous_declared_branch",
+              "reversing_declared_branch",
+              "derived_numeric_range_error"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "primary_rejection_reason": {
+          "enum": [
+            null,
+            "insufficient_samples",
+            "zero_voltage_span",
+            "voltage_endpoints_not_equal",
+            "noncontiguous_declared_branch",
+            "reversing_declared_branch",
+            "derived_numeric_range_error"
+          ]
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/observation"
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          },
+          "minItems": 0,
+          "maxItems": 999
+        },
+        "branch_audits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/branchAudit"
+          },
+          "minItems": 0,
+          "maxItems": 999
+        },
+        "shared_endpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sharedEndpoint"
+          },
+          "minItems": 0,
+          "maxItems": 998
+        },
+        "closure": {
+          "$ref": "#/$defs/closure"
+        },
+        "voltage_span_V_exact": {
+          "$ref": "#/$defs/exactDecimal"
+        },
+        "metrics": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/metrics"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "feature_availability": {
+          "$ref": "#/$defs/featureAvailability"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "supplied_order_not_verified_chronology",
+              "conditions_are_declarations",
+              "signed_cancellation_possible_self_intersection_not_tested",
+              "not_energy_intrinsic_hysteresis_or_causal_validation",
+              "feature_timing_unverified",
+              "flat_edges_retained",
+              "branch_endpoints_shared_observations",
+              "voltage_closed_current_endpoints_differ",
+              "zero_signed_integral_not_absence_of_hysteresis",
+              "nonzero_edge_contributions_cancel_exactly"
+            ]
+          },
+          "minItems": 5,
+          "maxItems": 10,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "key",
+        "status",
+        "rejection_reasons",
+        "primary_rejection_reason",
+        "sample_count",
+        "edge_count",
+        "observations",
+        "edges",
+        "branch_audits",
+        "shared_endpoints",
+        "closure",
+        "voltage_span_V_exact",
+        "metrics",
+        "feature_availability",
+        "warnings"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "usable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "rejection_reasons": {
+                "maxItems": 0
+              },
+              "primary_rejection_reason": {
+                "type": "null"
+              },
+              "metrics": {
+                "$ref": "#/$defs/metrics"
+              },
+              "branch_audits": {
+                "items": {
+                  "properties": {
+                    "signed_path_integral_A_V": {
+                      "$ref": "#/$defs/finiteNumber"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "rejection_reasons": {
+                "minItems": 1
+              },
+              "primary_rejection_reason": {
+                "enum": [
+                  "insufficient_samples",
+                  "zero_voltage_span",
+                  "voltage_endpoints_not_equal",
+                  "noncontiguous_declared_branch",
+                  "reversing_declared_branch",
+                  "derived_numeric_range_error"
+                ]
+              },
+              "metrics": {
+                "type": "null"
+              },
+              "branch_audits": {
+                "items": {
+                  "properties": {
+                    "signed_path_integral_A_V": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

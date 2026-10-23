@@ -7,8 +7,9 @@ CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 The usable core covers semiconductor I–V measurements, resistive RAM
 (RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
 measurements, constant-current transfer-sweep criteria, and Hall-response
-diagnostics, plus an ordered sweep-coordinate audit and user-windowed transfer
-log-current fitting. All seven command-line tools
+diagnostics, plus an ordered sweep-coordinate audit, user-windowed transfer
+log-current fitting, and an ordered I–V signed-path integral. All eight
+command-line tools
 use only the Python standard library, require explicit units and preserve
 measurement provenance. They make validation limits explicit instead of silently
 repairing questionable measurements.
@@ -66,6 +67,13 @@ All included measurements are invented software-test fixtures.
    residuals and labeled signed/magnitude reciprocal. No best-window search,
    sign repair, point trimming or automatic subthreshold-regime certification.
 
+8. **[Ordered I–V Signed-Path Integral](tools/iv-loop-integral/README.md)**
+   Compute a signed trapezoidal I dV descriptor for each exact declared
+   device/condition/cycle/replicate loop, with explicit outgoing-edge branch
+   labels and complete observation/edge lineage. Require exact voltage closure;
+   disclose unequal current endpoints and signed cancellation. No added closure,
+   unsigned lobe area, physical-energy calculation or intrinsic-hysteresis claim.
+
 ## Quick start
 
 For tool selection, adapting laboratory CSV exports, and checked end-to-end
@@ -110,11 +118,16 @@ python3 tools/transfer-log-slope/transfer_log_slope.py \
   --voltage-unit V --current-unit nA --current-polarity positive \
   --window-min 0.1 --window-max 0.4 --accept-log-transfer-assumptions --stdout
 
+python3 tools/iv-loop-integral/iv_loop_integral.py \
+  tools/iv-loop-integral/examples/01_triangle.csv \
+  --voltage-unit V --current-unit uA \
+  --accept-supplied-path-assumptions --stdout
+
 python3 run_tests.py
 ```
 
-The I–V, TLM, threshold-criterion, Hall-response, sweep-audit and transfer-log-slope
-fixtures exit `0`.
+The I–V, TLM, threshold-criterion, Hall-response, sweep-audit, transfer-log-slope
+and I–V signed-path quick-start fixtures exit `0`.
 The RRAM fixture deliberately includes missing/invalid pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
@@ -253,18 +266,19 @@ interpretation remain the user's responsibility; every row stays auditable.
 
 ## Verification
 
-Only **Python 3.12.14 on Linux** has been executed and verified locally. The
-source targets Python 3.10+, but other versions and operating systems are
-unverified. **CI is not configured**: this distribution includes no active
+**Python 3.12.14 and 3.13.5 on Linux** have been executed and verified locally.
+The source targets Python 3.10+, but Python 3.10/3.11 and other versions or
+operating systems remain unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all seven isolated tool suites plus the
+Run `python3 run_tests.py` to execute all eight isolated tool suites plus the
 end-to-end example suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
 fixed bias/temperature declarations, signed Hall fits and residuals, user-windowed
 base-10 transfer fits and selection audits, exact
-coordinate edge partitions and shared sample identities, missing and
+coordinate edge partitions and shared sample identities, exact signed I–V path
+integrals with explicit branch ownership and voltage-closure/numeric-range gates, missing and
 invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not

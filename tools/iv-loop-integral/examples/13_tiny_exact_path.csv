@@ -1,0 +1,4 @@
+lot,wafer,device,condition,cycle,replicate,sample_id,branch_to_next,voltage,current
+invented_lot,invented_wafer,invented_13_tiny_exact_path,invented_protocol,001,acquisition_1,p001,up,1e-150,1e-150
+invented_lot,invented_wafer,invented_13_tiny_exact_path,invented_protocol,001,acquisition_1,p002,down,10000000000000000000000000000001e-181,10000000000000000000000000000001e-181
+invented_lot,invented_wafer,invented_13_tiny_exact_path,invented_protocol,001,acquisition_1,p003,,1e-150,10000000000000000000000000000002e-181

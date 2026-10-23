@@ -1,0 +1,664 @@
+{
+  "fixture_status": "Original invented arithmetic fixtures with exact expected values. Oracle-only sums for rejected paths are not tool primary output.",
+  "cases": [
+    {
+      "file": "examples/01_triangle.csv",
+      "sha256": "3ebd2a24d2ba06471794e56bbe2111c63c6c6c17663c22eca558bdb7869a240f",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "2e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-6",
+      "edge_contributions_A_V_exact": [
+        "1.5e-6",
+        "3.5e-6",
+        "-2.5e-6",
+        "-5e-7"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "5e-6"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 3,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-3e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Original clockwise, genuinely I\u2013V-closed arithmetic polygon; S=2 microampere volt."
+    },
+    {
+      "file": "examples/02_reverse.csv",
+      "sha256": "6d0ea86d8670ecf165449ce0ce2b32293496496136d7c93cbb69ca3420e3defd",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "-2e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "-2e-6",
+      "edge_contributions_A_V_exact": [
+        "5e-7",
+        "2.5e-6",
+        "-3.5e-6",
+        "-1.5e-6"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "reversed_down",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "3e-6"
+        },
+        {
+          "branch_id": "reversed_up",
+          "edge_start": 3,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-5e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Full traversal reversed and outgoing edge labels remapped; S=\u22122 microampere volt."
+    },
+    {
+      "file": "examples/03_current_offset.csv",
+      "sha256": "d542ff81eb1076c209a48117abde27284d41febbcb114da5b9bd969c0c5718a3",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "2e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-6",
+      "edge_contributions_A_V_exact": [
+        "8.5e-6",
+        "1.05e-5",
+        "-9.5e-6",
+        "-7.5e-6"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "1.9e-5"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 3,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-1.7e-5"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Same complete closed-voltage path with constant +7 microampere offset. Total invariant; branches become +19 and \u221217 microampere volt."
+    },
+    {
+      "file": "examples/04_voltage_only_closure.csv",
+      "sha256": "11f163c82a787c7f2b066a496bd716fc702291b84c1d5b6f03b19d33c33c171f",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "-2e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "-2e-6",
+      "edge_contributions_A_V_exact": [
+        "2e-6",
+        "-4e-6"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "2e-6"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-4e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": false,
+      "note": "Accepted supplied-path metric, but current endpoints differ: no observed closed I\u2013V polygon or appended edge. S=\u22122 microampere volt."
+    },
+    {
+      "file": "examples/05_plateau.csv",
+      "sha256": "2685a3b9a10b40cb1e7e75805d1dc090f43aed245413eefa36af3e83ef563920",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "-1e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "-1e-6",
+      "edge_contributions_A_V_exact": [
+        "1e-6",
+        "0",
+        "0",
+        "-2e-6"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "1e-6"
+        },
+        {
+          "branch_id": "hold",
+          "edge_start": 2,
+          "edge_end": 3,
+          "signed_path_integral_A_V_exact": "0"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 4,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-2e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Every plateau observation survives; hold edges 2\u20133 integrate to zero; branch boundaries reference samples 2 and 4."
+    },
+    {
+      "file": "examples/06_bowtie.csv",
+      "sha256": "a9b90284fc994a3569b56801841f476d089e4cf8e9a7505760a6b5bdcd12d12f",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "0",
+      "oracle_only_raw_ordered_sum_A_V_exact": "0",
+      "edge_contributions_A_V_exact": [
+        "2e-6",
+        "-4e-6",
+        "2e-6",
+        "0"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up_a",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "2e-6"
+        },
+        {
+          "branch_id": "down_a",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-4e-6"
+        },
+        {
+          "branch_id": "up_b",
+          "edge_start": 3,
+          "edge_end": 3,
+          "signed_path_integral_A_V_exact": "2e-6"
+        },
+        {
+          "branch_id": "down_b",
+          "edge_start": 4,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "0"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Self-crossing synthetic example: S=0; two absolute lobe areas sum to 2 microampere volt, whereas sum(abs(edge contributions))=8. Tool does not calculate either area or intersections."
+    },
+    {
+      "file": "examples/07_open_voltage.csv",
+      "sha256": "f58f22f466003062b93ee2a3fba9d84df6b6b202363e6a667236b5b5afd795b4",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "voltage_endpoints_not_equal"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "1e-7",
+      "edge_contributions_A_V_exact": [
+        "1e-6",
+        "-9e-7"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "1e-6"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-9e-7"
+        }
+      ],
+      "voltage_closed_exact": false,
+      "current_endpoints_equal_exact": true,
+      "note": "Reject rather than close. Oracle-only raw sum is 0.1 microampere volt; +7 microampere offset would change it to 0.8."
+    },
+    {
+      "file": "examples/08_float_alias_endpoints.csv",
+      "sha256": "0ea8e8d03e08027a236d0c62376bd186bc682df318d0e200bc58e37fd7654361",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "voltage_endpoints_not_equal"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-37",
+      "edge_contributions_A_V_exact": [
+        "2e-6",
+        "-1.9999999999999999999999999999998e-6"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "2e-6"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-1.9999999999999999999999999999998e-6"
+        }
+      ],
+      "voltage_closed_exact": false,
+      "current_endpoints_equal_exact": true,
+      "note": "First/last V alias in binary64 but are unequal exact decimals; closure must reject."
+    },
+    {
+      "file": "examples/09_reversing_declared_branch.csv",
+      "sha256": "d54bb61cbe0bffbd50c819736d7c480f2131d37693704e2f17bde85bce08dce4",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "reversing_declared_branch"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-6",
+      "edge_contributions_A_V_exact": [
+        "1.5e-6",
+        "3.5e-6",
+        "-2.5e-6",
+        "-5e-7"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "all",
+          "edge_start": 1,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "2e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "The mathematical sum exists, but a single declared branch reverses voltage and fails the conservative scope contract."
+    },
+    {
+      "file": "examples/10_zero_voltage_span.csv",
+      "sha256": "23aad90ecd5ee8ff4f25791831175e9c6e8e4e55a12410f885d88c0f093c4656",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "zero_voltage_span"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "0",
+      "edge_contributions_A_V_exact": [
+        "0",
+        "0"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "hold",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "0"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": false,
+      "note": "All samples retained; all edges flat. A zero-span object is not an eligible loop feature."
+    },
+    {
+      "file": "examples/11_reused_branch_label.csv",
+      "sha256": "9c37ae787d56680129b56ec474f748844054c466f68b9ff3cea513a7f136c225",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "noncontiguous_declared_branch"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-6",
+      "edge_contributions_A_V_exact": [
+        "1.5e-6",
+        "3.5e-6",
+        "-2.5e-6",
+        "-5e-7"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "5e-6"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 3,
+          "edge_end": 3,
+          "signed_path_integral_A_V_exact": "-2.5e-6"
+        },
+        {
+          "branch_id": "up",
+          "edge_start": 4,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-5e-7"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Do not merge two disjoint uses of up, infer a new branch, or quietly discard an edge."
+    },
+    {
+      "file": "examples/12_zero_current.csv",
+      "sha256": "5147d5b82aaa31fbcb6bfb1b773551c42942e5ff168959de21edde6cd0bb166b",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "0",
+      "oracle_only_raw_ordered_sum_A_V_exact": "0",
+      "edge_contributions_A_V_exact": [
+        "0",
+        "0"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "0"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "0"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Usable zero descriptor with interpretation warning, not absence-of-hysteresis inference."
+    },
+    {
+      "file": "examples/13_tiny_exact_path.csv",
+      "sha256": "f8eff64bf41e73af874fe6d6001179b04c71e71f42461e9136d5447c107bb888",
+      "voltage_unit": "V",
+      "current_unit": "A",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "derived_numeric_range_error"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "-1e-362",
+      "edge_contributions_A_V_exact": [
+        "1.00000000000000000000000000000005e-331",
+        "-1.00000000000000000000000000000015e-331"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "1.00000000000000000000000000000005e-331"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-1.00000000000000000000000000000015e-331"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": false,
+      "note": "All nonzero SI inputs are in range; tiny exact differences survive. S=\u22121e\u2212362; zero binary64 must never be a usable feature."
+    },
+    {
+      "file": "examples/14_total_underflow.csv",
+      "sha256": "a0538c4ed5b8fbcbcd8dab06c22a5ac94c032a5bb011ebfc0527558e20f90988",
+      "voltage_unit": "V",
+      "current_unit": "A",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "derived_numeric_range_error"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "-5e-332",
+      "edge_contributions_A_V_exact": [
+        "1e-300",
+        "-1.00000000000000000000000000000005e-300"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "1e-300"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-1.00000000000000000000000000000005e-300"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": false,
+      "note": "Legal input and finite nonzero branch floats, but total \u22125e\u2212332 underflows; reject whole loop."
+    },
+    {
+      "file": "examples/15_branch_underflow.csv",
+      "sha256": "01b9fd0866c38066965f15f03abe33df7689ad5dfadc91c5ccaa993e97703f82",
+      "voltage_unit": "V",
+      "current_unit": "A",
+      "sample_count": 4,
+      "edge_count": 3,
+      "expected_exit": 1,
+      "status": "rejected",
+      "rejection_reasons": [
+        "derived_numeric_range_error"
+      ],
+      "expected_primary_metric_A_V_exact": null,
+      "oracle_only_raw_ordered_sum_A_V_exact": "-1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000499999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999995e+0",
+      "edge_contributions_A_V_exact": [
+        "-5e-332",
+        "4.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999899999999999999999999999999999995000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000005e-1",
+        "-1.5e+0"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "tiny_up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "-5e-332"
+        },
+        {
+          "branch_id": "large_up",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "4.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999899999999999999999999999999999995000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000005e-1"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 3,
+          "edge_end": 3,
+          "signed_path_integral_A_V_exact": "-1.5e+0"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": false,
+      "note": "Tiny first branch \u22125e\u2212332 underflows even though the total is finite near \u22121; branch gate rejects the whole loop."
+    },
+    {
+      "file": "examples/16_large_exact_cancellation.csv",
+      "sha256": "83ac9d21e4d09defc017fe30c451e76a46b63d9b8ef084fa89e4c84c33f514c1",
+      "voltage_unit": "V",
+      "current_unit": "A",
+      "sample_count": 3,
+      "edge_count": 2,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "0",
+      "oracle_only_raw_ordered_sum_A_V_exact": "0",
+      "edge_contributions_A_V_exact": [
+        "1e+300",
+        "-1e+300"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "up",
+          "edge_start": 1,
+          "edge_end": 1,
+          "signed_path_integral_A_V_exact": "1e+300"
+        },
+        {
+          "branch_id": "down",
+          "edge_start": 2,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "-1e+300"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Large \u00b11e300 branch values cancel exactly to zero. This is not an energy or absent-hysteresis conclusion."
+    },
+    {
+      "file": "examples/17_negative_current.csv",
+      "sha256": "607f92ee6af61d043c0c11a4fa0bf289c19a0589fa0197533b9d27d008f606b9",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "sample_count": 5,
+      "edge_count": 4,
+      "expected_exit": 0,
+      "status": "usable",
+      "rejection_reasons": [],
+      "expected_primary_metric_A_V_exact": "2e-6",
+      "oracle_only_raw_ordered_sum_A_V_exact": "2e-6",
+      "edge_contributions_A_V_exact": [
+        "1.5e-6",
+        "3.5e-6",
+        "-2.5e-6",
+        "-5e-7"
+      ],
+      "branch_block_audit": [
+        {
+          "branch_id": "down",
+          "edge_start": 1,
+          "edge_end": 2,
+          "signed_path_integral_A_V_exact": "5e-6"
+        },
+        {
+          "branch_id": "up",
+          "edge_start": 3,
+          "edge_end": 4,
+          "signed_path_integral_A_V_exact": "-3e-6"
+        }
+      ],
+      "voltage_closed_exact": true,
+      "current_endpoints_equal_exact": true,
+      "note": "Both signed terminal coordinates negated: S remains +2 microampere volt; no sign repair."
+    },
+    {
+      "file": "examples/18_missing_nonfinal_branch.csv",
+      "sha256": "02bab59ae076a9af149671466a0dd75d73f15aa712827cbc6a0b7d9634f1e231",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "expected_exit": 2,
+      "status": "fatal_input_error",
+      "expected_report": null,
+      "note": "Structural schema/identity violation; no output report should be written."
+    },
+    {
+      "file": "examples/19_nonempty_final_branch.csv",
+      "sha256": "4b578b3d992db4e5de93dbb83abd4f8e0aebc03b82f4ab009d0185350995f05e",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "expected_exit": 2,
+      "status": "fatal_input_error",
+      "expected_report": null,
+      "note": "Structural schema/identity violation; no output report should be written."
+    },
+    {
+      "file": "examples/20_duplicate_sample_id.csv",
+      "sha256": "5fc009e69fb688c88235c44af89da1b6596e62ce13f0ce64b23617706ed86699",
+      "voltage_unit": "V",
+      "current_unit": "uA",
+      "expected_exit": 2,
+      "status": "fatal_input_error",
+      "expected_report": null,
+      "note": "Structural schema/identity violation; no output report should be written."
+    }
+  ]
+}

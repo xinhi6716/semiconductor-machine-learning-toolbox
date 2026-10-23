@@ -1,0 +1,4 @@
+lot,wafer,device,condition,cycle,replicate,sample_id,branch_to_next,voltage,current
+invented_lot,invented_wafer,invented_16_large_exact_cancellation,invented_protocol,001,acquisition_1,p001,up,0,1e150
+invented_lot,invented_wafer,invented_16_large_exact_cancellation,invented_protocol,001,acquisition_1,p002,down,1e150,1e150
+invented_lot,invented_wafer,invented_16_large_exact_cancellation,invented_protocol,001,acquisition_1,p003,,0,1e150

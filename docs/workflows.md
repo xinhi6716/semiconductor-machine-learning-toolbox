@@ -20,6 +20,7 @@ behavior, not measurement accuracy, physical mechanisms, or device performance.
 | Signed transverse voltage versus magnetic flux density with fixed current, temperature and known wiring/field axis | [Hall response](../tools/hall-response/README.md) | Descriptive signed slope/intercept and residuals; current-normalized apparent sensitivity only at nonzero current. |
 | Transfer sweeps with a scientifically justified, explicitly chosen voltage window | [Transfer log-slope](../tools/transfer-log-slope/README.md) | Descriptive log10-current slope and labeled reciprocal, not a certified subthreshold swing. |
 | Ordered voltage or magnetic-flux-density samples whose direction changes need inspection | [Sweep segment audit](../tools/sweep-segments/README.md) | Exact contiguous edge runs and shared-endpoint identities; no inferred chronology or automatically valid physical branches. |
+| Complete ordered current/voltage loops with explicit device/condition/cycle/replicate and outgoing-edge branch labels | [I–V signed-path integral](../tools/iv-loop-integral/README.md) | Signed trapezoidal I dV in A·V, exact voltage closure and complete edge audit; not energy or proof of intrinsic hysteresis. |
 | Declared HRS/LRS I–V branches plus complete device and condition records | [RRAM feature example](../examples/measurement-to-features/README.md) | A strict two-tool workflow ending in one descriptive feature row per device. |
 
 These quantities are not interchangeable. Static `I/V` is not differential
@@ -115,6 +116,16 @@ The [transfer-log-slope tool](../tools/transfer-log-slope/README.md) uses the sa
 11-column transfer schema as current-criterion Vth, but requires at least three
 selected samples and a user-chosen voltage window. Do not automatically reuse
 a threshold bracket as a physically justified subthreshold window.
+
+For an ordered I–V loop descriptor, use the separate exact schema
+`lot,wafer,device,condition,cycle,replicate,sample_id,branch_to_next,voltage,current`.
+Every nonfinal `branch_to_next` labels its outgoing measured edge; the final one
+is empty. Groups are contiguous, samples are never sorted, and every flat or
+turnaround observation remains. Voltage endpoints must match exactly; unequal
+current endpoints are disclosed rather than closed with an invented edge. See
+the [full contract and command](../tools/iv-loop-integral/README.md). Its signed
+A·V result is not energy or unsigned lobe area, and a full-loop feature is not
+available before its final sample. Future-outcome timing remains unverified.
 
 ## 3. Run and inspect the five supplied fixtures
 
