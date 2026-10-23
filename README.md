@@ -7,9 +7,10 @@ CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 The usable core covers semiconductor I–V measurements, resistive RAM
 (RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
 measurements, constant-current transfer-sweep criteria, and Hall-response
-diagnostics. All five command-line tools use only the Python standard library,
-require explicit units, preserve measurement provenance, and expose exclusions
-instead of silently repairing questionable measurements.
+diagnostics, plus an ordered sweep-coordinate audit. All six command-line tools
+use only the Python standard library, require explicit units and preserve
+measurement provenance. They make validation limits explicit instead of silently
+repairing questionable measurements.
 
 **Current scope:** feature preprocessing and descriptive measurement summaries.
 There is no trained ML model, device simulator, instrument driver, automatic
@@ -50,6 +51,12 @@ All included measurements are invented software-test fixtures.
    and temperature. Report signed slope, zero-field intercept, residuals and
    current-normalized apparent sensitivity only for nonzero current. No branch
    merging, automatic offset cancellation or carrier-property inference.
+6. **[Ordered Sweep Segment Audit](tools/sweep-segments/README.md)**
+   Map supplied voltage or magnetic-flux-density coordinates into maximal exact
+   increasing/decreasing/flat edge runs. Retain every observation and explicit
+   shared-endpoint identities, including plateau turnarounds. No inferred
+   acquisition chronology, cycles, independent observations or physical hysteresis;
+   no automatic branch export or handoff to the extractors.
 
 ## Quick start
 
@@ -86,11 +93,15 @@ python3 tools/hall-response/hall_response.py \
   --field-unit T --voltage-unit mV --current-unit mA \
   --accept-hall-assumptions --stdout
 
+python3 tools/sweep-segments/sweep_segments.py \
+  tools/sweep-segments/examples/synthetic_hall_coordinates.csv \
+  --axis magnetic-flux-density --coordinate-unit mT --stdout
+
 python3 run_tests.py
 ```
 
-The I–V, TLM, threshold-criterion and Hall-response fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
-pairs and exits `1` while producing its diagnostic JSON report; this is expected,
+The I–V, TLM, threshold-criterion, Hall-response and sweep-audit fixtures exit `0`.
+The RRAM fixture deliberately includes missing/invalid pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
 Use `--help` on each CLI for the exact options. `--stdout` explicitly opts in to
@@ -104,7 +115,9 @@ Consult each tool's README for exact exit-status semantics: `0` and `1` reflect
 that tool's documented checks and exclusions, not a shared scientific-quality
 rating. All use `2` for a fatal input/CLI/I/O error. A report can contain useful
 features and exclusions together: inspect its counts and warnings, not just
-whether JSON was produced. A write failure may leave an incomplete new file; discard it after a
+whether JSON was produced. The sweep audit uses only `0` (complete audit, not
+scientific validation) and `2`; it never excludes samples or uses status `1`.
+A write failure may leave an incomplete new file; discard it after a
 fatal exit. None of the programs sends data anywhere or changes the input file.
 
 ## End-to-end RRAM feature example
@@ -136,7 +149,10 @@ not an additional measurement tool, a trained ML model, or real-device validatio
 2. **Declare branches rather than infer them.** Export each fixed-state,
    fixed-protocol monotonic segment with a distinct branch label. The I–V tool
    turns a chosen read voltage into one signed current/static-conductance feature
-   per device, cycle, and branch, with the exact source rows used.
+   per device, cycle, and branch, with the exact source rows used. The optional
+   [sweep audit](tools/sweep-segments/README.md) maps coordinate-direction changes
+   and plateaus without deleting samples, but does not establish chronology or
+   fixed conditions and is not an automatic branch exporter.
 3. **Pair only intended resistance states.** For RRAM measurements, explicitly
    label HRS/LRS and provide a read-condition ID naming the relevant protocol.
    Run the window evaluator only on intended pairs. It compares declarations;
@@ -197,11 +213,12 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all five isolated tool suites plus the
+Run `python3 run_tests.py` to execute all six isolated tool suites plus the
 end-to-end example suite. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
-fixed bias/temperature declarations, signed Hall fits and residuals, missing and
+fixed bias/temperature declarations, signed Hall fits and residuals, exact
+coordinate edge partitions and shared sample identities, missing and
 invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not

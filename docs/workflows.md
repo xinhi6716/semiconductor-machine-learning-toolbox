@@ -18,6 +18,7 @@ behavior, not measurement accuracy, physical mechanisms, or device performance.
 | Total contact-pair resistances at known gaps and width in a conventional rectangular TLM structure | [Linear TLM](../tools/tlm-extract/README.md) | Sheet resistance and per-contact resistance under the declared linear-TLM assumptions. |
 | Transfer sweeps with known source-referenced biases and temperature | [Current-criterion Vth](../tools/vth-constant-current/README.md) | Signed VGS where signed ID reaches your declared current criterion. |
 | Signed transverse voltage versus magnetic flux density with fixed current, temperature and known wiring/field axis | [Hall response](../tools/hall-response/README.md) | Descriptive signed slope/intercept and residuals; current-normalized apparent sensitivity only at nonzero current. |
+| Ordered voltage or magnetic-flux-density samples whose direction changes need inspection | [Sweep segment audit](../tools/sweep-segments/README.md) | Exact contiguous edge runs and shared-endpoint identities; no inferred chronology or automatically valid physical branches. |
 | Declared HRS/LRS I–V branches plus complete device and condition records | [RRAM feature example](../examples/measurement-to-features/README.md) | A strict two-tool workflow ending in one descriptive feature row per device. |
 
 These quantities are not interchangeable. Static `I/V` is not differential
@@ -48,6 +49,11 @@ Before running, resolve these questions from actual acquisition/sample records:
 3. **Where does each branch start and stop?** Use the acquisition log to split
    distinct monotonic, fixed-protocol segments. Preserve their original order.
    Sorting a triangular sweep by voltage would erase its history, not repair it.
+   The [ordered sweep audit](../tools/sweep-segments/README.md) can map candidate
+   breaks and flat intervals without dropping samples. Its supplied-order
+   mapping does not prove chronology or stable conditions; inspect the original
+   records before declaring downstream branches, and retain shared-endpoint
+   identities rather than counting repeated references as new measurements.
 4. **What does a condition ID stand for?** Keep a traceable definition covering
    relevant bias, temperature, timing, state preparation, compliance and instrument
    settings. Identical strings only establish identical declarations. They do not
@@ -100,7 +106,9 @@ Use plain UTF-8 comma-separated CSV, decimal/scientific numbers without unit
 suffixes, and exact unpadded identifiers. Treat IDs such as `001` as strings, not
 spreadsheet numbers. A blank/invalid numeric value must not be filled with zero.
 The tools differ in blank-row and numeric-error handling; consult their linked
-CSV contracts rather than assuming one parser policy applies to all five.
+CSV contracts rather than assuming one parser policy applies to every tool.
+The optional sweep audit uses its own coordinate-only schema and strict
+contiguous sequence contract; see its [input contract](../tools/sweep-segments/README.md#input-contract).
 
 ## 3. Run and inspect the five supplied fixtures
 
@@ -397,7 +405,8 @@ tool's documented checks; `1` means a report contains rejected/excluded groups;
 `2` means a fatal CLI, schema, input or output error. The feature builder uses
 `0` for completion and `2` for failure. None of these codes is a scientific
 quality score. A warning may accompany exit `0`, and producing JSON is not proof
-that every result is usable.
+that every result is usable. The sweep audit also uses only `0` and `2`: plateaus,
+singletons and coordinate reversals are retained and described, not exclusions.
 
 | Report finding | Review action |
 | --- | --- |
@@ -433,8 +442,9 @@ meaningful model evaluation, causal claim, endurance or lifetime estimate.
 python3 run_tests.py
 ```
 
-The current suite has 270 tests: 45 I–V, 53 RRAM, 47 TLM, 48 current-criterion Vth,
-50 Hall-response and 27 end-to-end feature tests. The commands and checks in this guide were run
+The current suite has 309 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
+50 Hall-response, 36 sweep-audit and 27 end-to-end feature tests.
+The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain
 unverified here. The tests cover software contracts and invented examples, not
 instrument calibration or laboratory validity. Use each CLI's `--help` and linked
