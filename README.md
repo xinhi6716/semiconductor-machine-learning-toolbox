@@ -155,6 +155,31 @@ invented six-device fixtures are included; the example accepts SI inputs only.
 Read its assumptions before adapting laboratory data. It is a two-tool workflow,
 not an additional measurement tool, a trained ML model, or real-device validation.
 
+## End-to-end FET branch feature example
+
+The [FET measurement-to-features workflow](examples/fet-measurement-to-features/README.md)
+runs the current-criterion and explicit-window log-slope extractors on the same
+transfer-CSV bytes. It retains both complete raw-data audits, all device/branch
+IDs and exact row lineage, and exports a per-branch table plus a two-column
+numeric predictor CSV and calculator-compatible feature-name allowlist.
+
+```sh
+python3 examples/fet-measurement-to-features/build_features.py \
+  examples/fet-measurement-to-features/fixtures/transfer.csv \
+  --voltage-unit V --current-unit nA \
+  --criterion-current 50 --criterion-current-unit nA \
+  --current-polarity positive --max-bracket-span 0.1 \
+  --window-min 0.1 --window-max 0.4 \
+  --accept-measurement-assumptions --output-dir /tmp/invented-fet-features
+```
+
+Use a new output directory. Sixteen invented branches represent four namespaced
+device labels, not sixteen independent devices. If either extractor rejects any
+branch, only audits are saved (exit `1`), with no partial-cohort feature export.
+The log slope is descriptive, not a certified subthreshold swing. The allowlist
+excludes IDs/metadata but cannot establish suitability for an unspecified target:
+never use a target or its algebraic proxy as a feature. No target or model is made.
+
 ## A semiconductor feature workflow
 
 1. **Preserve the measurement context.** Keep device/wafer/lot provenance,
@@ -234,7 +259,7 @@ unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
 Run `python3 run_tests.py` to execute all seven isolated tool suites plus the
-end-to-end example suite. They cover
+end-to-end example suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
 fixed bias/temperature declarations, signed Hall fits and residuals, user-windowed
@@ -252,7 +277,8 @@ These are proposed directions, **not implemented capabilities**:
 - Additional MOSFET transfer-curve features beyond the implemented constant-
   current criterion and user-windowed log slope, with explicit bias conditions
   and documented definitions.
-- Grouped feature-table workflows beyond the strict complete-pair RRAM example,
+- Grouped feature-table workflows beyond the strict complete-pair RRAM and
+  complete-branch FET examples,
   with explicit handling of missingness, censoring and other sampling designs.
 - RRAM cycle/retention diagnostics with explicit censoring and physical stopping
   criteria, without extrapolated lifetime claims.

@@ -431,13 +431,52 @@ creating an output directory. It does not emit a partially filtered feature tabl
 Missingness and censoring need an explicit design outside this complete-pair
 example; do not discard devices until it passes.
 
-## 5. Review warnings before downstream use
+## 5. Build shared-input FET branch features
+
+The [FET workflow](../examples/fet-measurement-to-features/README.md) combines
+only the two tools with the exact same transfer schema: signed current-criterion
+VGS and signed explicit-window log slope. It does not map unrelated RRAM, TLM or
+Hall measurements into a fabricated common device table.
+
+```sh
+python3 examples/fet-measurement-to-features/build_features.py \
+  examples/fet-measurement-to-features/fixtures/transfer.csv \
+  --voltage-unit V --current-unit nA \
+  --criterion-current 50 --criterion-current-unit nA \
+  --current-polarity positive --max-bracket-span 0.1 \
+  --window-min 0.1 --window-max 0.4 \
+  --accept-measurement-assumptions --output-dir "$RUN_DIR/fet-branch-features"
+```
+
+Expected exit `0`: 112 invented observations produce 16 branch rows from four
+namespaced devices, with 64 fitted window samples and 48 retained outside samples.
+The first forward/reverse criterion values are approximately `0.1444444444 V`
+and `0.1166666667 V`; both log slopes are `10 decades/V`. No physical regime is
+inferred. The criterion, bounds and interpolation limit are fixture choices,
+not recommended measurement settings.
+
+Read the full bundle: `features.csv`, numeric-only `predictors.csv`, exact
+calculator-compatible `feature_schema.json`, both unchanged-schema tool reports,
+original `transfer_input.csv`, `workflow_status.json` and `provenance.json`.
+The entire six-part branch identity and raw rows remain auditable. One rejected
+branch in either extractor yields **audit-only exit `1`**, preserving all groups
+and both statuses but exporting no feature table or allowlist. Fatal errors use
+`2`. No zero-filling, partial-cohort selection or best-window search occurs.
+
+The two candidate columns are not automatically valid for every prediction task.
+Do not use the target or its algebraic proxy as a feature, such as predicting
+slope from its reciprocal. Never split repeats/branches of a device across train
+and test. The example's lot-level grouping is a declaration, not proof of lot
+independence. There is no synthetic target, fitted model or performance claim.
+
+## 6. Review warnings before downstream use
 
 For the six measurement CLIs, exit `0` means all selected groups passed that
 tool's documented checks; `1` means a report contains rejected/excluded groups;
-`2` means a fatal CLI, schema, input or output error. The feature builder uses
-`0` for completion and `2` for failure. None of these codes is a scientific
-quality score. A warning may accompany exit `0`, and producing JSON is not proof
+`2` means a fatal CLI, schema, input or output error. The RRAM feature builder uses
+`0` for completion and `2` for failure; the FET workflow additionally uses `1`
+for a complete audit-only bundle with rejected branches and no feature export.
+None of these codes is a scientific quality score. A warning may accompany exit `0`, and producing JSON is not proof
 that every result is usable. The sweep audit also uses only `0` and `2`: plateaus,
 singletons and coordinate reversals are retained and described, not exclusions.
 
@@ -470,14 +509,15 @@ Predicting the ratio from the very resistances that define it is not evidence of
 scientific predictive performance. Six invented device rows cannot support a
 meaningful model evaluation, causal claim, endurance or lifetime estimate.
 
-## 6. Recheck the software
+## 7. Recheck the software
 
 ```sh
 python3 run_tests.py
 ```
 
-The current suite has 359 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
-50 Hall-response, 36 sweep-audit, 50 transfer-log-slope and 27 end-to-end feature tests.
+The current suite has 395 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
+50 Hall-response, 36 sweep-audit, 50 transfer-log-slope, 27 RRAM feature-workflow
+tests and 36 FET feature-workflow tests.
 The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain
 unverified here. The tests cover software contracts and invented examples, not

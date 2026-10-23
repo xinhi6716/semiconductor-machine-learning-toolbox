@@ -11,7 +11,8 @@ SUITES = ("iv-readpoint", "rram-window", "tlm-extract", "vth-constant-current", 
 def main():
     failures = []
     suites = [(tool, ROOT / "tools" / tool / "tests") for tool in SUITES]
-    suites.append(("measurement-to-features", ROOT / "examples" / "measurement-to-features" / "tests"))
+    for example in ("measurement-to-features", "fet-measurement-to-features"):
+        suites.append((example, ROOT / "examples" / example / "tests"))
     for tool, tests in suites:
         print("\n=== " + tool + " ===", flush=True)
         result = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s",
