@@ -6,7 +6,8 @@ CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 
 The usable core covers semiconductor I–V measurements, resistive RAM
 (RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
-measurements, and constant-current transfer-sweep criteria. All four command-line tools use only the Python standard library,
+measurements, constant-current transfer-sweep criteria, and Hall-response
+diagnostics. All five command-line tools use only the Python standard library,
 require explicit units, preserve measurement provenance, and expose exclusions
 instead of silently repairing questionable measurements.
 
@@ -43,6 +44,12 @@ All included measurements are invented software-test fixtures.
    reject ambiguous crossings and nonmonotonic sweeps; interpolate only inside
    adjacent measured brackets. No automatic W/L normalization, extrapolation,
    universal physical threshold or causal interpretation is supplied.
+5. **[Hall Response Extractor](tools/hall-response/README.md)**
+   Fit signed transverse voltage versus magnetic flux density within explicit
+   physical-device/condition/replicate/branch groups at fixed declared current
+   and temperature. Report signed slope, zero-field intercept, residuals and
+   current-normalized apparent sensitivity only for nonzero current. No branch
+   merging, automatic offset cancellation or carrier-property inference.
 
 ## Quick start
 
@@ -74,10 +81,15 @@ python3 tools/vth-constant-current/vth_constant_current.py \
   --criterion-current 1 --criterion-current-unit uA \
   --current-polarity positive --accept-transfer-assumptions --stdout
 
+python3 tools/hall-response/hall_response.py \
+  tools/hall-response/examples/synthetic_hall.csv \
+  --field-unit T --voltage-unit mV --current-unit mA \
+  --accept-hall-assumptions --stdout
+
 python3 run_tests.py
 ```
 
-The I–V, TLM and threshold-criterion fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
+The I–V, TLM, threshold-criterion and Hall-response fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
 pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
@@ -114,7 +126,7 @@ python3 examples/measurement-to-features/build_features.py \
 Choose a new output directory. The original deterministic generator and its
 invented six-device fixtures are included; the example accepts SI inputs only.
 Read its assumptions before adapting laboratory data. It is a two-tool workflow,
-not a fifth measurement tool, a trained ML model, or real-device validation.
+not an additional measurement tool, a trained ML model, or real-device validation.
 
 ## A semiconductor feature workflow
 
@@ -156,6 +168,11 @@ criterion. Its operational VGS value depends on that declared criterion and
 protocol. It does not infer a universal physical Vth, identify transistor type,
 choose a default current, or remove differences between sweep branches.
 
+Hall response uses its own signed field/current/voltage input and documented
+wiring/field-axis protocol. Its least-squares slope and intercept are descriptive,
+not a validated physical Hall model. A zero-current group is a voltage-background
+diagnostic only; no carrier density, type, mobility or thickness is inferred.
+
 ## Guardrails and limitations
 
 - Only explicitly declared units are converted. Unit or state inference is absent.
@@ -180,11 +197,12 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all four isolated tool suites plus the
+Run `python3 run_tests.py` to execute all five isolated tool suites plus the
 end-to-end example suite. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
-fixed bias/temperature declarations, missing and invalid data, strict feature-table
+fixed bias/temperature declarations, signed Hall fits and residuals, missing and
+invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not
 hardware accuracy, scientific validity, or real-device performance.

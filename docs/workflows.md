@@ -17,13 +17,15 @@ behavior, not measurement accuracy, physical mechanisms, or device performance.
 | Explicitly labeled HRS and LRS resistance observations | [RRAM window](../tools/rram-window/README.md) | Dimensionless `R_HRS / R_LRS` for matching device/cycle/read-condition/bias pairs. |
 | Total contact-pair resistances at known gaps and width in a conventional rectangular TLM structure | [Linear TLM](../tools/tlm-extract/README.md) | Sheet resistance and per-contact resistance under the declared linear-TLM assumptions. |
 | Transfer sweeps with known source-referenced biases and temperature | [Current-criterion Vth](../tools/vth-constant-current/README.md) | Signed VGS where signed ID reaches your declared current criterion. |
+| Signed transverse voltage versus magnetic flux density with fixed current, temperature and known wiring/field axis | [Hall response](../tools/hall-response/README.md) | Descriptive signed slope/intercept and residuals; current-normalized apparent sensitivity only at nonzero current. |
 | Declared HRS/LRS I–V branches plus complete device and condition records | [RRAM feature example](../examples/measurement-to-features/README.md) | A strict two-tool workflow ending in one descriptive feature row per device. |
 
 These quantities are not interchangeable. Static `I/V` is not differential
 `dI/dV` or material conductivity. Static `V/I` is not a fitted TLM resistance or
 an isolated contact property. A resistance ratio does not identify a switching
 mechanism. Criterion Vth is an operational definition, not a universal physical
-threshold. The feature example does not combine TLM or Vth data with RRAM data,
+threshold. Hall response is not a carrier density or mobility measurement. The
+feature example does not combine TLM, Vth or Hall data with RRAM data,
 and none of these workflows trains or validates an ML model.
 
 ## 2. Adapt an instrument export without losing its meaning
@@ -85,14 +87,22 @@ Use these exact schemas. Column order may differ; names are case-sensitive.
   temperature positive, and temperature/VDS/VBS exactly constant within a group.
   Current uses the declared current unit, not current density. A group needs at
   least two samples and one signed current convention.
+- Hall response:
+  `lot,wafer,device,condition,replicate,branch,temperature_K,bias_current,magnetic_field,transverse_voltage`.
+  The first six fields define a strictly monotonic field branch with at least
+  three distinct fields, fixed signed current and positive fixed kelvin temperature.
+  B units are `T`, `mT`, `uT`, `G`, `kG`, not H in A/m; voltage units are `V`, `mV`,
+  `uV`, `nV`; current units are `A`, `mA`, `uA`, `nA`, `pA`. Document unchanged
+  ordered voltage terminals, current direction and perpendicular field axis in
+  the condition protocol. Zero current permits a background diagnostic only.
 
 Use plain UTF-8 comma-separated CSV, decimal/scientific numbers without unit
 suffixes, and exact unpadded identifiers. Treat IDs such as `001` as strings, not
 spreadsheet numbers. A blank/invalid numeric value must not be filled with zero.
 The tools differ in blank-row and numeric-error handling; consult their linked
-CSV contracts rather than assuming one parser policy applies to all four.
+CSV contracts rather than assuming one parser policy applies to all five.
 
-## 3. Run and inspect the four supplied fixtures
+## 3. Run and inspect the five supplied fixtures
 
 Run the blocks in order in the same POSIX shell. First create a fresh private
 parent directory; each tool will exclusively create a new report inside it.
@@ -214,6 +224,29 @@ otherwise nonmonotonic current trace is rejected; multiple crossings, exact-hit
 plateaus and absent crossings are also rejected. Do not delete noisy points or
 take absolute currents merely to obtain a value from this conservative extractor.
 
+### E. Describe a Hall branch without inferring carrier properties
+
+```sh
+python3 tools/hall-response/hall_response.py \
+  tools/hall-response/examples/synthetic_hall.csv \
+  --field-unit T --voltage-unit mV --current-unit mA \
+  --accept-hall-assumptions --output "$RUN_DIR/hall.json"
+```
+
+Expected exit: `0`. Twenty invented points produce four separate fits for two
+physical-device labels. Invented A's increasing and decreasing branches retain
+intercepts of `0.0003 V` and `0.0004 V`; both have slope `0.002 V/T` at `0.001 A`.
+Its negative-current replicate has negative slope, but the same signed slope/current
+ratio, `2 V/(A T)`. Invented B is deliberately curved and warns about nonzero
+residuals while still providing a descriptive fit. Warnings are not rejections.
+
+Inspect every residual, fixed condition and branch separately. A fitted intercept
+is not an isolated offset and is not subtracted. Both field polarities do not imply
+matched reversal pairs; this tool does no antisymmetrization or offset cancellation.
+Nonzero residuals may reflect noise, curvature, rounding or drift, while zero
+residuals cannot validate Hall physics. No carrier density, mobility, thickness or
+carrier sign is inferred. See the tool's README for the full scope boundary.
+
 ### Check the arithmetic and inspect actual report fields
 
 This check is specific to the supplied fixtures. It prints counts and verifies
@@ -228,7 +261,7 @@ from pathlib import Path
 
 root = Path(os.environ["RUN_DIR"])
 reports = {name: json.loads((root / (name + ".json")).read_text())
-           for name in ("iv", "rram", "tlm", "vth")}
+           for name in ("iv", "rram", "tlm", "vth", "hall")}
 for name, report in reports.items():
     print(name, report["counts"])
 iv = reports["iv"]
@@ -250,7 +283,13 @@ for result in reports["tlm"]["results"]:
 for result in reports["vth"]["results"]:
     value = result["extraction"]["gate_source_voltage_at_criterion_V"]
     assert math.isclose(value, {"forward": 0.6, "reverse": 0.7}[result["branch"]])
-print("Four fixture report checks passed.")
+hall = reports["hall"]
+assert hall["counts"]["input_groups"] == 4
+assert hall["counts"]["distinct_physical_device_ids"] == 2
+assert [r["current_normalized_sensitivity_V_per_A_T"] for r in hall["results"]] == [2, 2, 2, 1]
+assert math.isclose(hall["results"][-1]["fit"]["max_abs_residual_V"], 0.0001)
+assert "nonzero_residuals_possible_nonlinearity_noise_or_drift" in hall["results"][-1]["warnings"]
+print("Five fixture report checks passed.")
 PY
 ```
 
@@ -353,7 +392,7 @@ example; do not discard devices until it passes.
 
 ## 5. Review warnings before downstream use
 
-For the four measurement CLIs, exit `0` means all selected groups passed that
+For the five measurement CLIs, exit `0` means all selected groups passed that
 tool's documented checks; `1` means a report contains rejected/excluded groups;
 `2` means a fatal CLI, schema, input or output error. The feature builder uses
 `0` for completion and `2` for failure. None of these codes is a scientific
@@ -367,6 +406,7 @@ that every result is usable.
 | Missing state, condition/bias mismatch, invalid resistance | Investigate the records. Keep exclusion reasons; do not impute a ratio or replace null with zero. RRAM diagnostic categories may overlap. |
 | Ratio below one | Retain the value and flag; review state preparation and labeling without automatically swapping them. |
 | TLM extrapolation, repeated gaps, or replicate warnings | Inspect sampled geometry, row weighting and residuals. High R-squared does not validate contacts, remove parasitics or bound intercept uncertainty. |
+| Hall residuals, zero-current normalization or zero-field extrapolation warnings | Inspect the full branch and protocol. A slope/intercept is descriptive, not validated Hall physics or a corrected transport property. |
 | Binary64 rounding warning | Retain exact original numeric text and inspect the specific issue. Printed JSON precision cannot establish measurement resolution. |
 
 Save real reports deliberately: `--output` refuses an existing path, including a
@@ -393,8 +433,8 @@ meaningful model evaluation, causal claim, endurance or lifetime estimate.
 python3 run_tests.py
 ```
 
-The current suite has 220 tests: 45 I–V, 53 RRAM, 47 TLM, 48 current-criterion Vth,
-and 27 end-to-end feature tests. The commands and checks in this guide were run
+The current suite has 270 tests: 45 I–V, 53 RRAM, 47 TLM, 48 current-criterion Vth,
+50 Hall-response and 27 end-to-end feature tests. The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain
 unverified here. The tests cover software contracts and invented examples, not
 instrument calibration or laboratory validity. Use each CLI's `--help` and linked
