@@ -46,6 +46,9 @@ All included measurements are invented software-test fixtures.
 
 ## Quick start
 
+For tool selection, adapting laboratory CSV exports, and checked end-to-end
+commands, see the [practical measurement workflow guide](docs/workflows.md).
+
 Python **3.10+**. No package installation, API key, external service, downloaded
 model, or internet access is needed. Run from the repository root:
 
