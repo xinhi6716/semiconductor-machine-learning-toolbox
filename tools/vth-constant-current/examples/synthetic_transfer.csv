@@ -1,0 +1,9 @@
+lot,wafer,device,condition,replicate,branch,temperature_K,drain_voltage,body_voltage,gate_voltage,drain_current
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,forward,300,0.05,0,0,0
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,forward,300,0.05,0,0.4,0.2
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,forward,300,0.05,0,0.8,1.8
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,forward,300,0.05,0,1.2,4.5
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,reverse,300,0.05,0,1.2,4.0
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,reverse,300,0.05,0,0.9,1.8
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,reverse,300,0.05,0,0.5,0.2
+invented-lot,invented-wafer,invented-fet-A,fixed-bias,r1,reverse,300,0.05,0,0,0

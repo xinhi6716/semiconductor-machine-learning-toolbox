@@ -4,9 +4,9 @@ Small, inspectable tools for **semiconductor measurement preprocessing and
 ML-ready feature extraction**. This repository is semiconductor-only: generic
 CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 
-The first usable core covers semiconductor I–V measurements, resistive RAM
-(RRAM/ReRAM), and conventional linear transfer-length-method (TLM) contact
-measurements. All three command-line tools use only the Python standard library,
+The usable core covers semiconductor I–V measurements, resistive RAM
+(RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
+measurements, and constant-current transfer-sweep criteria. All four command-line tools use only the Python standard library,
 require explicit units, preserve measurement provenance, and expose exclusions
 instead of silently repairing questionable measurements.
 
@@ -36,6 +36,13 @@ All included measurements are invented software-test fixtures.
    uniform-width linear-TLM assumptions. Retain negative fit coefficients as
    rejected fits, expose residuals and extrapolation warnings, and never infer
    contact resistivity, transfer length or independent-device statistics.
+4. **[Constant-Current Threshold Criterion Extractor](tools/vth-constant-current/README.md)**
+   Find signed VGS at an explicitly declared signed drain-current criterion,
+   keeping lot/wafer/device/condition/replicate/branch provenance and fixed
+   temperature/VDS/VBS declarations. Preserve forward/reverse sweeps separately;
+   reject ambiguous crossings and nonmonotonic sweeps; interpolate only inside
+   adjacent measured brackets. No automatic W/L normalization, extrapolation,
+   universal physical threshold or causal interpretation is supplied.
 
 ## Quick start
 
@@ -58,10 +65,16 @@ python3 tools/tlm-extract/tlm_extract.py \
   --length-unit um --resistance-unit ohm \
   --accept-linear-tlm-assumptions --stdout
 
+python3 tools/vth-constant-current/vth_constant_current.py \
+  tools/vth-constant-current/examples/synthetic_transfer.csv \
+  --voltage-unit V --current-unit uA \
+  --criterion-current 1 --criterion-current-unit uA \
+  --current-polarity positive --accept-transfer-assumptions --stdout
+
 python3 run_tests.py
 ```
 
-The I–V and TLM fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
+The I–V, TLM and threshold-criterion fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
 pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
@@ -72,10 +85,11 @@ not already exist. Reports are created exclusively with requested POSIX mode
 `0600`; no existing file or symlink is overwritten. Filesystem permissions on
 other platforms may differ.
 
-CLI exit statuses are `0` for a fully usable report, `1` for a report containing
-excluded groups, and `2` for a fatal input/CLI/I/O error. A report can contain useful
-features and exclusions together: inspect its counts, not just whether JSON was
-produced. A write failure may leave an incomplete new file; discard it after a
+Consult each tool's README for exact exit-status semantics: `0` and `1` reflect
+that tool's documented checks and exclusions, not a shared scientific-quality
+rating. All use `2` for a fatal input/CLI/I/O error. A report can contain useful
+features and exclusions together: inspect its counts and warnings, not just
+whether JSON was produced. A write failure may leave an incomplete new file; discard it after a
 fatal exit. None of the programs sends data anywhere or changes the input file.
 
 ## A semiconductor feature workflow
@@ -112,13 +126,21 @@ linear regression is a declared measurement model, not a trained ML model. A
 positive coefficient or high R-squared does not validate equal contacts, Ohmic
 behavior, removed parasitics, or useful precision in the extrapolated intercept.
 
+The threshold-criterion extractor also requires its own transfer-sweep input,
+including fixed temperature, source-referenced biases and a signed current
+criterion. Its operational VGS value depends on that declared criterion and
+protocol. It does not infer a universal physical Vth, identify transistor type,
+choose a default current, or remove differences between sweep branches.
+
 ## Guardrails and limitations
 
 - Only explicitly declared units are converted. Unit or state inference is absent.
 - Strict CSV schemas reject extra columns rather than silently discard conditions.
   See each tool's documented blank-line and numeric-validation behavior.
-- Linear interpolation is local in voltage, not a physical device model. Static
+- Interpolation is local to adjacent measured samples, not a physical device model. Static
   `I/V` is not differential `dI/dV`, conductivity, or proof of Ohmic conduction.
+- Constant-current extraction uses linear signed current versus VGS, not
+  log-current interpolation. Bracket span is not measurement uncertainty.
 - HRS/LRS are user labels, not conclusions. A ratio below one is retained and
   flagged rather than relabeled, inverted, or treated as successful switching.
 - The software does not infer SET/RESET thresholds, microscopic mechanisms,
@@ -134,9 +156,10 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all three isolated `unittest` suites. They cover
+Run `python3 run_tests.py` to execute all four isolated `unittest` suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
-isolation, TLM equations and grouped fits, missing and invalid data, deliberate
+isolation, TLM equations and grouped fits, signed current-criterion crossings,
+fixed bias/temperature declarations, missing and invalid data, deliberate
 output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not
 hardware accuracy, scientific validity, or real-device performance.
@@ -145,8 +168,8 @@ hardware accuracy, scientific validity, or real-device performance.
 
 These are proposed directions, **not implemented capabilities**:
 
-- MOSFET transfer-curve features with explicit bias conditions and documented
-  threshold-voltage extraction definitions.
+- Additional MOSFET transfer-curve features beyond the implemented constant-
+  current criterion, with explicit bias conditions and documented definitions.
 - Semiconductor-specific grouped feature tables that preserve wafer/device/lot
   provenance and distinguish repeated sweeps from independent devices.
 - RRAM cycle/retention diagnostics with explicit censoring and physical stopping
