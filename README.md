@@ -4,10 +4,11 @@ Small, inspectable tools for **semiconductor measurement preprocessing and
 ML-ready feature extraction**. This repository is semiconductor-only: generic
 CSV utilities, experiment runners, and unrelated ML demos do not belong here.
 
-The first usable core focuses on semiconductor I–V measurements and resistive
-RAM (RRAM/ReRAM). Both command-line tools use only the Python standard library,
-make unit declarations mandatory, preserve device provenance, and expose
-exclusions instead of silently repairing questionable measurements.
+The first usable core covers semiconductor I–V measurements, resistive RAM
+(RRAM/ReRAM), and conventional linear transfer-length-method (TLM) contact
+measurements. All three command-line tools use only the Python standard library,
+require explicit units, preserve measurement provenance, and expose exclusions
+instead of silently repairing questionable measurements.
 
 **Current scope:** feature preprocessing and descriptive measurement summaries.
 There is no trained ML model, device simulator, instrument driver, automatic
@@ -28,6 +29,13 @@ All included measurements are invented software-test fixtures.
    `R_HRS / R_LRS`. Report missing pairs, invalid resistance values, and condition
    mismatches. Summarize repeated cycles within each device and condition, not as
    independent devices or population-level evidence.
+3. **[Linear TLM Extractor](tools/tlm-extract/README.md)**
+   Fit total pair resistance versus edge-to-edge contact gap within explicit
+   lot/wafer/structure/condition/replicate groups. Calculate channel sheet
+   resistance and per-contact resistance only under declared equal-contact,
+   uniform-width linear-TLM assumptions. Retain negative fit coefficients as
+   rejected fits, expose residuals and extrapolation warnings, and never infer
+   contact resistivity, transfer length or independent-device statistics.
 
 ## Quick start
 
@@ -45,14 +53,19 @@ python3 tools/rram-window/rram_window.py \
   --voltage-unit V --resistance-unit ohm \
   --hrs-label HRS --lrs-label LRS --stdout
 
+python3 tools/tlm-extract/tlm_extract.py \
+  tools/tlm-extract/examples/synthetic_tlm.csv \
+  --length-unit um --resistance-unit ohm \
+  --accept-linear-tlm-assumptions --stdout
+
 python3 run_tests.py
 ```
 
-The I–V fixture exits `0`. The RRAM fixture deliberately includes missing/invalid
+The I–V and TLM fixtures exit `0`. The RRAM fixture deliberately includes missing/invalid
 pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
-Use `--help` on either CLI for the exact options. `--stdout` explicitly opts in to
+Use `--help` on each CLI for the exact options. `--stdout` explicitly opts in to
 printing raw device identifiers, measurements, and derived features. To keep a
 report in a file, replace `--stdout` with `--output NEW_PATH.json`; the path must
 not already exist. Reports are created exclusively with requested POSIX mode
@@ -63,7 +76,7 @@ CLI exit statuses are `0` for a fully usable report, `1` for a report containing
 excluded groups, and `2` for a fatal input/CLI/I/O error. A report can contain useful
 features and exclusions together: inspect its counts, not just whether JSON was
 produced. A write failure may leave an incomplete new file; discard it after a
-fatal exit. Neither program sends data anywhere or changes the input file.
+fatal exit. None of the programs sends data anywhere or changes the input file.
 
 ## A semiconductor feature workflow
 
@@ -93,6 +106,12 @@ assign HRS/LRS labels or turn its signed `I/V` values into a resistance-window
 input. Any conversion and state assignment require an explicit, justified
 measurement protocol; no hidden automatic handoff makes those decisions.
 
+TLM input is separate as well: it requires a defensible total resistance for each
+contact pair and known geometry, not automatically converted I–V features. Its
+linear regression is a declared measurement model, not a trained ML model. A
+positive coefficient or high R-squared does not validate equal contacts, Ohmic
+behavior, removed parasitics, or useful precision in the extrapolated intercept.
+
 ## Guardrails and limitations
 
 - Only explicitly declared units are converted. Unit or state inference is absent.
@@ -115,9 +134,10 @@ source targets Python 3.10+, but other versions and operating systems are
 unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute both isolated `unittest` suites. They cover
+Run `python3 run_tests.py` to execute all three isolated `unittest` suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
-isolation, missing and invalid data, deliberate output, and no-overwrite safety.
+isolation, TLM equations and grouped fits, missing and invalid data, deliberate
+output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not
 hardware accuracy, scientific validity, or real-device performance.
 

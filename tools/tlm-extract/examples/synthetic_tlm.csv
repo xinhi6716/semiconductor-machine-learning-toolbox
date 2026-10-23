@@ -1,0 +1,9 @@
+lot,wafer,structure,condition,replicate,pair,spacing,width,resistance
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r1,p1,2,10,30
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r1,p2,5,10,60
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r1,p3,10,10,110
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r1,p4,20,10,210
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r2,p1,2,10,32
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r2,p2,5,10,62
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r2,p3,10,10,112
+synthetic-lot,synthetic-wafer,bar-A,synthetic-fixed-condition,r2,p4,20,10,212
