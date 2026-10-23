@@ -1,0 +1,14 @@
+device,cycle,state,read_condition,read_voltage,resistance
+device_A,1,HRS,synthetic_protocol,0.1,100000
+device_A,1,LRS,synthetic_protocol,0.1,1000
+device_A,2,HRS,synthetic_protocol,0.1,90000
+device_A,2,LRS,synthetic_protocol,0.1,1000
+device_A,3,HRS,synthetic_protocol,0.1,50000
+device_B,1,HRS,synthetic_protocol,-0.1,20000
+device_B,1,LRS,synthetic_protocol,-0.1,1000
+device_B,2,HRS,synthetic_protocol,0.1,800
+device_B,2,LRS,synthetic_protocol,0.1,1000
+device_B,3,HRS,synthetic_protocol,0.2,15000
+device_B,3,LRS,synthetic_protocol,0.1,1000
+device_B,4,HRS,synthetic_protocol,0.1,0
+device_B,4,LRS,synthetic_protocol,0.1,1000
