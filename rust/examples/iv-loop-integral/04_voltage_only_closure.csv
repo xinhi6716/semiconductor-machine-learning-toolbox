@@ -1,0 +1,4 @@
+lot,wafer,device,condition,cycle,replicate,sample_id,branch_to_next,voltage,current
+invented_lot,invented_wafer,invented_04_voltage_only_closure,invented_protocol,001,acquisition_1,p001,up,0,1
+invented_lot,invented_wafer,invented_04_voltage_only_closure,invented_protocol,001,acquisition_1,p002,down,1,3
+invented_lot,invented_wafer,invented_04_voltage_only_closure,invented_protocol,001,acquisition_1,p003,,0,5

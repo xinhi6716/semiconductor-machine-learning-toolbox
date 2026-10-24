@@ -1,0 +1,2 @@
+condition,read_voltage_V,temperature_K,read_delay_ms,protocol
+synthetic_read_v1,0.1,300,10,invented_fixed_state_dc_read

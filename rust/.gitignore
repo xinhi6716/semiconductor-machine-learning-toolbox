@@ -1,0 +1,11 @@
+/target/
+/.build-cache/
+/validation/
+/dist/
+/env.sh
+/demo-reports.*/
+/workflow-reports.*/
+/demo-reports-*/
+/workflow-reports-*/
+__pycache__/
+*.pyc

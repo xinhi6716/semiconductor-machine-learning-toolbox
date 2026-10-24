@@ -1,0 +1,10 @@
+device,cycle,branch,voltage,current
+synthetic_A,1,post_program_up,0.05,5
+synthetic_A,1,post_program_up,0.15,15
+synthetic_A,1,post_program_down,0.15,12
+synthetic_A,1,post_program_down,0.05,4
+synthetic_A,2,post_program_up,0.05,4.5
+synthetic_A,2,post_program_up,0.15,13.5
+synthetic_B,1,post_program_up,0.05,0.5
+synthetic_B,1,post_program_up,0.1,1
+synthetic_B,1,post_program_up,0.15,1.5

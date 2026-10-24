@@ -1,0 +1,19 @@
+{
+  "Cargo.lock": "3cd562888ed4449ffe9d156d586087d27587292a0eb33b18824431aaf6e0f775",
+  "Cargo.toml": "c1ef51d57a43fd2ad34a7b5e465d47e0a9bfa0232c68a1f227c1cc9199b475fc",
+  "src/bosch_identity_audit.rs": "293ea5946ef4559567e4578a561eca8585f91d5fec03a62a4aad6b78659d3d6d",
+  "src/cli_help.json": "eb4295f35ac4be158a7df7a3831fe3810e1def56514d131147f002e5362316df",
+  "src/common.rs": "53d02f43af76013cf5e75941445c49918cd5efc60fa9b530b742cf5fe827304e",
+  "src/hall_response.rs": "e0386481b470ff9d000a80496e2da41d3cf8e70746caf6f9282bbe1a2ba6a0a2",
+  "src/iv_grid_audit.rs": "a17cdd3891afca1ec6cbf38e99c2c25e67bee2ee76bfa58f8dae2e90f7efa97d",
+  "src/iv_loop_integral.rs": "bf7cf28a2b2b1ebc5df8a005cb48f48cd8ed4fdbce71443dc36fd041c567a472",
+  "src/iv_readpoint.rs": "398c378e659300f6703b345b092c005b0d78d519a56982ee4268be391621a92b",
+  "src/main.rs": "cb1b4221a45f80ce432ae4c1a221e36d083ab024aced92617fa84dd5085ff558",
+  "src/reference_constants.json": "f9934fbeb7034e6f05a9b89ceb9697bf8bbfb4072fbbb667e0e30fb988e7410c",
+  "src/rram_window.rs": "6d90fbf6021a74b008a6a34e19149ffdd6edd2afe5387710ed5038bfbb5268de",
+  "src/sweep_segments.rs": "401d3ae96e4f1eb2b3ca0fd19a0a4b2e8c8f978185a0b01e47d8b668e5e45f5c",
+  "src/tlm_extract.rs": "2395a8ecba2cdd079f799efa3ff9013ed3efc57f3363042d8a5119caef47bcc5",
+  "src/transfer_log_slope.rs": "ab2d9eb3676101ffc0dc91aafa13e35d69824dc08ccfad402e00b1d207a0aab5",
+  "src/vth_constant_current.rs": "06c1ad5bfcc2cfa8195a84e8ec49112c9814aa8a5241ac9965c8e3c0e9671059",
+  "src/workflows.rs": "c0b51f85d4e631ac0cf0cce9078f95cd8606ccf4cc2d4975e98d71fe7a988555"
+}

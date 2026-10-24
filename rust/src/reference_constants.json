@@ -1,0 +1,104 @@
+{
+  "sweep-segments": {
+    "LIMITS": [
+      "Order means supplied CSV row order, not verified acquisition chronology. A sequence is a user-declared contiguous record, not an inferred cycle or independent replicate.",
+      "Segments partition adjacent coordinate edges into maximal increasing, decreasing or flat runs. Every edge belongs to exactly one segment. Adjacent segments reference the same boundary observation; repeated references are not new measurements.",
+      "Comparisons use exact decimal values in the declared unit, without a tolerance, binary64 conversion, sorting, averaging, smoothing, deletion or interpolation. Equal-coordinate samples with distinct identities remain distinct observations.",
+      "A flat run is separate; it is never assigned to an increasing or decreasing run. A singleton has one retained observation and zero edges or segments.",
+      "Coordinate reversals, plateaus and segment counts do not establish physical hysteresis, switching states, acquisition cycles, stable conditions, or independent devices or observations.",
+      "The audit is not an automatically valid branch input for I-V, constant-current Vth or Hall-response extraction. Verify chronology, fixed conditions and protocol separately, and preserve shared-endpoint lineage in any later adapter."
+    ]
+  },
+  "iv-grid-audit": {},
+  "iv-loop-integral": {
+    "BASE_WARNINGS": [
+      "supplied_order_not_verified_chronology",
+      "conditions_are_declarations",
+      "signed_cancellation_possible_self_intersection_not_tested",
+      "not_energy_intrinsic_hysteresis_or_causal_validation",
+      "feature_timing_unverified"
+    ],
+    "LIMITS": [
+      "This is the signed trapezoidal integral of the supplied piecewise-straight I-V path, in A V, not electrical energy, physical power, unsigned geometric lobe area, intrinsic hysteresis or causal validation. No physical integration error bound is supplied.",
+      "Voltage endpoints must match exactly; current endpoint equality is reported separately. A voltage-closed path with unequal currents is not an observed closed I-V polygon. No endpoint, edge, interpolation sample or closure is added.",
+      "Every supplied observation is retained. branch_to_next owns the edge from its row to the next row in the same declared loop; the final field is empty. Shared branch endpoints are one observation, not independent measurements.",
+      "Branch labels are declared, contiguous and nonreversing in voltage, with flats allowed. This conservative branch contract is not a mathematical requirement of the integral. No cycles, physical states or branches are inferred; no sorting, sign repair, smoothing, trimming or averaging is performed.",
+      "A V has the dimension of W but this path descriptor is not electrical power. Terminal energy requires a justified time-domain integral of V(t) I(t) dt in J. Constant-voltage dwell edges contribute zero here but can consume energy.",
+      "Signed lobe contributions may cancel. A zero result does not establish absent hysteresis, and a nonzero result does not establish a mechanism. Self-intersections and lobe areas are not calculated.",
+      "Adding a constant current offset changes the total by offset times (last voltage minus first voltage); invariance applies only to exactly voltage-closed totals, not individual branches, branch-specific drift, or calibration errors.",
+      "Exact decimal-to-rational SI arithmetic determines comparisons and sums. Exact decimal strings are authoritative; binary64 summaries can round or alias distinct values. Nonzero-to-zero or nonfinite summary conversion rejects the entire loop, never clips or fills it.",
+      "Device, condition, cycle, replicate and supplied order are declarations, not verified chronology, fixed laboratory conditions, independent devices, or actual physical closure. Retain instrument records, protocol and adapter lineage separately; the hash covers only this input CSV.",
+      "The feature requires the complete loop and every used annotation. Availability is not established before the final sample; time_verified is false. Future prediction requires separate evidence that the full feature existed by the prediction origin and the target occurs strictly later; labels are not timestamps and repeats are not independent devices."
+    ]
+  },
+  "tlm-extract": {
+    "SOURCE_URL": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=924311",
+    "ASSUMPTIONS": [
+      "Declared conventional rectangular linear TLM: R_total = R_sheet * spacing / width + 2 * R_contact. Spacing is the positive edge-to-edge gap, not contact pitch; width is transverse to channel current.",
+      "Each group has a uniform channel sheet resistance, constant width, equal Ohmic contacts with the same geometry, and one fixed bias, temperature, state and measurement protocol. The software cannot verify these declarations.",
+      "Lead, probe, metal and other series resistance are negligible or removed before input. Otherwise intercept/2 is an apparent contribution, not an isolated contact resistance.",
+      "Every row is equally weighted in ordinary least squares, treating gap as exact. Rows may share contacts; repeated gaps, pairs, replicates or structures do not establish statistically independent devices. No confidence intervals or population aggregation are provided.",
+      "The zero-spacing intercept is extrapolated. Positive coefficients or high R-squared do not establish the model, Ohmic conduction, measurement accuracy, or contact quality.",
+      "Only channel sheet resistance in ohm/square and per-contact resistance in ohm are calculated. No specific contact resistivity, transfer length, under-contact sheet resistance or mechanism is inferred.",
+      "Decimal inputs and regression intermediates are exact rational values; JSON numbers are rounded binary64. Nonzero results that cannot be represented as finite nonzero binary64 are rejected, not clipped."
+    ]
+  },
+  "iv-readpoint": {
+    "ASSUMPTIONS": [
+      "Voltage is the signed voltage across the measured device; current uses one consistent terminal/polarity convention.",
+      "Each device/cycle/branch label denotes one acquisition-ordered monotonic-voltage segment and one fixed measurement protocol/state. Branch labels and state meaning are supplied by the user, not inferred.",
+      "Interpolation assumes I is locally linear in V only between the adjacent samples reported. The software cannot verify this assumption, read disturb, settling, compliance clipping, noise floor, or temperature/protocol stability.",
+      "Conductance_S is signed static I(V_read)/V_read, not differential dI/dV, a fitted conductance, or an intrinsic material property. Zero read voltage is rejected; negative current/conductance is retained.",
+      "No interpolation across devices, cycles, or branches; no sorting to repair sweeps, extrapolation, SET/RESET threshold inference, or microscopic-mechanism inference.",
+      "SI values are represented as finite binary64 JSON numbers. Nonzero values that underflow to zero and overflowing derived results are rejected. No measurement-uncertainty propagation or statistical independence is assumed."
+    ]
+  },
+  "hall-response": {
+    "SOURCES": [
+      "https://www.nist.gov/pml/nanoscale-device-characterization-division/popular-links/hall-effect/hall-effect",
+      "https://www.nist.gov/pml/nanoscale-device-characterization-division/popular-links/hall-effect/resistivity-and-hall",
+      "https://www.nist.gov/pml/nanoscale-device-characterization-division/popular-links/hall-effect/resistivity-and-hall/hall",
+      "https://www.lakeshore.com/docs/default-source/product-downloads/manuals/hall_sensor-_manual.pdf"
+    ],
+    "ASSUMPTIONS": [
+      "Each condition ID identifies a documented fixed measurement protocol, including current terminals and positive direction, ordered transverse voltage terminals (V_plus - V_minus), signed perpendicular field axis, device state, timing and calibration. The software cannot verify the protocol or geometry.",
+      "Each lot/wafer/device/condition/replicate/branch is one acquisition-ordered strictly monotonic magnetic-flux-density sweep at fixed declared signed current and positive temperature in kelvin. Fields are B in tesla, not H in A/m. Branches and replicates are never merged or assumed to be independent devices.",
+      "The descriptive fit is transverse_voltage = slope * magnetic_field + intercept, with equal row weights and field values treated as exact. It is not a causal fit or proof of a Hall mechanism, linearity, calibration, Ohmic contacts, thermal stability or measurement accuracy.",
+      "The signed slope divided by the signed nonzero declared bias current is a current-normalized apparent Hall response in V/(A T). Zero-current groups retain a voltage-response diagnostic only. No absolute-value conversion or carrier-sign assignment is made.",
+      "The fitted zero-field intercept is a diagnostic, not an isolated instrumental offset or a validated zero-field measurement. Contact misalignment, longitudinal pickup, thermoelectric contributions, drift, nonlinearities and other effects can remain in both slope and intercept. No offset subtraction or opposite-field/current pairing is performed.",
+      "Nonzero residuals flag possible nonlinearity, noise, rounding or drift without distinguishing their cause or statistical significance. Zero residuals or high R-squared do not establish a valid physical model. RMSE uses N, not N-2, and is a descriptive residual scale, not uncertainty.",
+      "No carrier density, carrier type, Hall coefficient, mobility, thickness, resistivity, transfer function outside the measured field range, confidence interval or population statistic is inferred.",
+      "Exact decimal/rational arithmetic is used until JSON binary64 conversion. Keep the original input: JSON rounds values, and nonzero derived values outside finite nonzero binary64 range reject the group rather than being clipped."
+    ]
+  },
+  "vth-constant-current": {
+    "SOURCE_URL": "https://download.tek.com/manual/ACS-907-01_F_Nov_2017_Prog_ACS-907-01F.pdf",
+    "ASSUMPTIONS": [
+      "Gate, drain and body voltages are signed VGS, VDS and VBS, each referenced to source; drain current uses the explicitly declared current-sign convention, not an inferred transistor type.",
+      "Each lot/wafer/device/condition/replicate/branch key denotes one acquisition-ordered strictly monotonic VGS sweep at fixed nonzero VDS, fixed VBS, positive temperature in kelvin and one fixed protocol/state. Separate forward and reverse branches are never averaged.",
+      "The signed nonzero drain-current criterion is supplied by the user as unnormalized terminal current in amperes after unit conversion. No W/L, area or width normalization is performed and no universal criterion is chosen.",
+      "This is a criterion-defined VGS, often called constant-current threshold voltage, not a universal physical threshold, an intrinsic material property, a turn-on guarantee or evidence of a microscopic mechanism.",
+      "Interpolation is linear in signed drain current versus VGS only between the reported adjacent measured samples, never logarithmic and never extrapolated. Strict VGS order and non-strict monotonic current are required; no smoothing, sorting, averaging or outlier removal is applied.",
+      "The software cannot establish device type, bias regime, compliance, noise floor, settling, temperature accuracy, contact effects or protocol stability. A unique crossing is not metrology validation, and bracket width is not measurement uncertainty.",
+      "Exact decimal/rational arithmetic is used until JSON binary64 conversion; source input must be retained. Replicates and branches are not assumed to be independent devices. No uncertainty propagation or population statistics are provided."
+    ]
+  },
+  "bosch-identity-audit": {},
+  "rram-window": {},
+  "transfer-log-slope": {
+    "SOURCES": [
+      "https://download.tek.com/manual/4200-904-01E.pdf",
+      "https://download.tek.com/manual/ACS2600RTM-900-01(B-Dec2012)(User).pdf"
+    ],
+    "ASSUMPTIONS": [
+      "VGS, VDS and VBS are signed and source referenced. The declared current polarity defines s=+1 or -1, not transistor type. Only strictly positive s*ID can be logged; no absolute-value sign repair is performed.",
+      "Each lot/wafer/device/condition/replicate/branch is one acquisition-ordered strictly monotonic VGS sweep at fixed nonzero VDS, fixed VBS, positive fixed temperature in kelvin and one documented fixed protocol/state. Branches and replicates remain separate and are not independent devices.",
+      "The user supplies one inclusive VGS window applied identically to every branch. All measured samples in it are fitted with equal row weights and at least three distinct VGS points are required. No current filtering, endpoint interpolation, extrapolation, best-window search, smoothing or outlier removal is performed.",
+      "The response is y=log10(s*ID_A / 1 A), fitted as y=a+b*VGS_V. b is signed decades/V; 1/b is signed V/decade, 1000/b signed mV/decade. Its separately labeled magnitude is not a certified subthreshold swing. A zero slope has no reciprocal.",
+      "This is a descriptive unweighted log-current fit with VGS treated as exact, not a local derivative, a reverse regression, a physical subthreshold classification or an intrinsic device property. The user must independently justify the window, bias regime and measurement protocol before any subthreshold interpretation.",
+      "Residuals are observed minus fitted log10 current in decades. RMSE uses N, not N-2. Residuals and R-squared are diagnostics, not uncertainty, confidence intervals or proof of linearity; tiny residuals may come from finite-precision logarithms.",
+      "No noise floor, leakage/background, compliance, self-heating, settling, current-density or geometry correction is inferred. Zero or sign-conflicting selected current rejects the whole group; unselected finite currents are retained and not logged. Nonmonotonic current is retained and warned, not trimmed.",
+      "Decimal/rational parsing and window selection are exact. Base-10 logarithms use 80 significant decimal digits; regression on those rounded logarithms is exact rational arithmetic. Reports use binary64 and may round source values. Keep original input; numeric-range failure rejects the fit rather than clipping a value."
+    ]
+  }
+}

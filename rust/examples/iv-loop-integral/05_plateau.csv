@@ -1,0 +1,6 @@
+lot,wafer,device,condition,cycle,replicate,sample_id,branch_to_next,voltage,current
+invented_lot,invented_wafer,invented_05_plateau,invented_protocol,001,acquisition_1,p001,up,0,0
+invented_lot,invented_wafer,invented_05_plateau,invented_protocol,001,acquisition_1,p002,hold,1,2
+invented_lot,invented_wafer,invented_05_plateau,invented_protocol,001,acquisition_1,p003,hold,1,3
+invented_lot,invented_wafer,invented_05_plateau,invented_protocol,001,acquisition_1,p004,down,1,4
+invented_lot,invented_wafer,invented_05_plateau,invented_protocol,001,acquisition_1,p005,,0,0

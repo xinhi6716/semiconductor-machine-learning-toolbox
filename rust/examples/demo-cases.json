@@ -1,0 +1,135 @@
+[
+  {
+    "tool": "iv-readpoint",
+    "input": "examples/iv-readpoint/synthetic_iv.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V",
+      "--current-unit",
+      "uA",
+      "--read-voltage",
+      "100",
+      "--read-voltage-unit",
+      "mV"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "rram-window",
+    "input": "examples/rram-window/synthetic.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V",
+      "--resistance-unit",
+      "ohm",
+      "--hrs-label",
+      "HRS",
+      "--lrs-label",
+      "LRS"
+    ],
+    "expected_exit": 1
+  },
+  {
+    "tool": "tlm-extract",
+    "input": "examples/tlm-extract/synthetic_tlm.csv",
+    "arguments": [
+      "--length-unit",
+      "um",
+      "--resistance-unit",
+      "ohm",
+      "--accept-linear-tlm-assumptions"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "vth-constant-current",
+    "input": "examples/vth-constant-current/synthetic_transfer.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V",
+      "--current-unit",
+      "uA",
+      "--criterion-current",
+      "1",
+      "--criterion-current-unit",
+      "uA",
+      "--current-polarity",
+      "positive",
+      "--accept-transfer-assumptions"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "hall-response",
+    "input": "examples/hall-response/synthetic_hall.csv",
+    "arguments": [
+      "--field-unit",
+      "T",
+      "--voltage-unit",
+      "mV",
+      "--current-unit",
+      "mA",
+      "--accept-hall-assumptions"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "sweep-segments",
+    "input": "examples/sweep-segments/synthetic_hall_coordinates.csv",
+    "arguments": [
+      "--axis",
+      "magnetic-flux-density",
+      "--coordinate-unit",
+      "mT"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "transfer-log-slope",
+    "input": "examples/transfer-log-slope/synthetic_transfer.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V",
+      "--current-unit",
+      "nA",
+      "--current-polarity",
+      "positive",
+      "--window-min",
+      "0.1",
+      "--window-max",
+      "0.4",
+      "--accept-log-transfer-assumptions"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "iv-loop-integral",
+    "input": "examples/iv-loop-integral/01_triangle.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V",
+      "--current-unit",
+      "uA",
+      "--accept-supplied-path-assumptions"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "bosch-identity-audit",
+    "input": "examples/bosch-identity-audit/synthetic_inventory.csv",
+    "arguments": [
+      "--channel-metadata",
+      "examples/bosch-identity-audit/synthetic_channels.json"
+    ],
+    "expected_exit": 0
+  },
+  {
+    "tool": "iv-grid-audit",
+    "input": "examples/iv-grid-audit/synthetic_equal.csv",
+    "arguments": [
+      "--voltage-unit",
+      "V"
+    ],
+    "expected_exit": 0
+  }
+]

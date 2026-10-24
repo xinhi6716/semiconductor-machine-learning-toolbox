@@ -1,5 +1,15 @@
 # Semiconductor Machine Learning Toolbox
 
+## Native Rust downloads
+
+The additive [native Rust edition](rust/README.md) provides the same ten core
+commands plus two end-to-end feature workflows without a Python runtime. Start
+with the [Traditional Chinese Quickstart](rust/QUICKSTART_zh-TW.md),
+[validation and platform limits](rust/VALIDATION.md), or the
+[Windows/Linux/source release](https://github.com/xinhi6716/semiconductor-machine-learning-toolbox/releases/tag/rust-v0.1.0).
+Linux is runtime-tested; Windows is cross-compiled and inspected, not yet
+Windows-runtime-tested. The original Python tools and usage below are unchanged.
+
 Small, inspectable tools for **semiconductor measurement preprocessing and
 ML-ready feature extraction**. This repository is semiconductor-only: generic
 CSV utilities, experiment runners, and unrelated ML demos do not belong here.
