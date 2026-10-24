@@ -321,6 +321,43 @@ class AuditTests(unittest.TestCase):
         self.assertNotIn("private_secret", stderr.getvalue())
         self.assertEqual(stdout.getvalue(), "")
 
+    def test_stdout_flush_failure_is_fatal_and_stream_closed(self):
+        class BrokenBufferedStdout:
+            closed = False
+            def write(self, value): return len(value)
+            def flush(self): raise OSError("private_secret")
+            def close(self):
+                self.closed = True
+                raise OSError("private_secret")
+        stdout, stderr = BrokenBufferedStdout(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            result = audit.main([str(self.input), "--channel-metadata", str(self.sidecar), "--stdout"])
+        self.assertEqual(result, 2)
+        self.assertTrue(stdout.closed)
+        self.assertIn("No complete report claimed", stderr.getvalue())
+        self.assertNotIn("private_secret", stderr.getvalue())
+
+    @unittest.skipUnless(sys.platform.startswith("linux") and Path("/dev/full").exists(),
+                         "requires Linux /dev/full for a real deferred write failure")
+    def test_buffered_stdout_error_keeps_documented_exit_status(self):
+        # Make the write fit in the Python buffer so failure occurs only on flush.
+        script = """
+import importlib.util, io, sys
+spec = importlib.util.spec_from_file_location("bosch_audit", sys.argv[1])
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+sys.stdout = io.TextIOWrapper(io.BufferedWriter(io.FileIO("/dev/full", "wb"),
+                                              buffer_size=1024 * 1024))
+raise SystemExit(audit.main(sys.argv[2:]))
+"""
+        run = subprocess.run([sys.executable, "-c", script, str(ROOT / "bosch_identity_audit.py"),
+                              str(self.input), "--channel-metadata", str(self.sidecar), "--stdout"],
+                             capture_output=True, text=True, timeout=10)
+        self.assertEqual(run.returncode, 2, run.stderr)
+        self.assertEqual(run.stdout, "")
+        self.assertEqual(run.stderr,
+                         "Audit failed: input/output/serialization error. No complete report claimed.\n")
+
 
 if __name__ == "__main__":
     unittest.main()

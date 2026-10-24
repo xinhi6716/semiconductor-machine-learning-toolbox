@@ -345,6 +345,21 @@ def write_report(payload, path):
         stream.write(payload)
 
 
+def write_stdout(payload):
+    """Finish buffered output before reporting success, even for a closed pipe."""
+    try:
+        sys.stdout.write(payload.decode("utf-8"))
+        sys.stdout.flush()
+    except (OSError, ValueError):
+        # A failed flush can retain bytes. Close the unusable stream so Python
+        # does not retry that flush at shutdown and replace exit status 2 by 120.
+        try:
+            sys.stdout.close()
+        except (OSError, ValueError):
+            pass
+        raise
+
+
 class Parser(argparse.ArgumentParser):
     def error(self, message):
         raise InputError("Invalid command-line options; use --help")
@@ -362,7 +377,7 @@ def main(argv=None):
         report = audit(read_regular(args.csv, MAX_CSV_BYTES), read_regular(args.channel_metadata, MAX_METADATA_BYTES))
         payload = report_bytes(report)
         if args.stdout:
-            sys.stdout.write(payload.decode("utf-8"))
+            write_stdout(payload)
         else:
             write_report(payload, args.output)
         return 0
