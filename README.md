@@ -9,8 +9,9 @@ The usable core covers semiconductor I–V measurements, resistive RAM
 measurements, constant-current transfer-sweep criteria, and Hall-response
 diagnostics, plus an ordered sweep-coordinate audit, user-windowed transfer
 log-current fitting, and an ordered I–V signed-path integral. A ninth tool audits
-BOSCH plasma-etch identity and channel-name metadata. All
-nine command-line tools use only the Python standard library and preserve
+BOSCH plasma-etch identity and channel-name metadata. A tenth compares exact
+voltage-grid coverage across declared I–V sweeps without inspecting response
+values. All ten command-line tools use only the Python standard library and preserve
 provenance. Measurement-reading tools require explicit units; the metadata-only
 BOSCH audit neither requires nor verifies physical units. They make validation
 limits explicit instead of silently
@@ -82,6 +83,12 @@ All included measurements are invented software-test fixtures.
    preserve duplicates/missing labels and report only candidate name joins.
    No dataset download, NetCDF decoder, target eligibility or automatic exclusions.
 
+10. **[I–V Voltage-Grid Audit](tools/iv-grid-audit/README.md)**
+    Compare exact voltage-coordinate sets across explicitly labeled I–V sweeps.
+    Preserve full device/condition/sweep/branch provenance, duplicate observations
+    and missing-from-observed-union coordinates. Extra response/target fields stay
+    opaque. No planned-grid inference, row repair, fitting or independent-DUT claim.
+
 ## Quick start
 
 For tool selection, adapting laboratory CSV exports, and checked end-to-end
@@ -136,11 +143,15 @@ python3 tools/bosch-identity-audit/bosch_identity_audit.py \
   --channel-metadata tools/bosch-identity-audit/examples/synthetic_channels.json \
   --stdout
 
+python3 tools/iv-grid-audit/iv_grid_audit.py \
+  tools/iv-grid-audit/examples/synthetic_equal.csv \
+  --voltage-unit V --stdout
+
 python3 run_tests.py
 ```
 
 The I–V, TLM, threshold-criterion, Hall-response, sweep-audit, transfer-log-slope,
-I–V signed-path and BOSCH metadata quick-start fixtures exit `0`. The BOSCH
+I–V signed-path, BOSCH metadata and equal-voltage-grid quick-start fixtures exit `0`. The BOSCH
 audit retains incomplete/duplicate records and missing labels even on exit `0`;
 it does not select an eligible scientific cohort.
 The RRAM fixture deliberately includes missing/invalid pairs and exits `1` while producing its diagnostic JSON report; this is expected,
@@ -159,6 +170,8 @@ rating. All use `2` for a fatal input/CLI/I/O error. A report can contain useful
 features and exclusions together: inspect its counts and warnings, not just
 whether JSON was produced. The sweep and BOSCH metadata audits use only `0` (complete audit, not
 scientific validation) and `2`; neither selects a cohort or uses status `1`.
+The voltage-grid audit uses `1` for duplicate coordinates or unequal observed
+grids, with all observations retained and response values uninspected.
 A write failure may leave an incomplete new file; discard it after a
 fatal exit. None of the programs sends data anywhere or changes the input file.
 
@@ -265,8 +278,10 @@ interpretation remain the user's responsibility; every row stays auditable.
 ## Guardrails and limitations
 
 - Only explicitly declared units are converted. Unit or state inference is absent.
-- Strict CSV schemas reject extra columns rather than silently discard conditions.
-  See each tool's documented blank-line and numeric-validation behavior.
+- Measurement extractors use strict CSV schemas that reject extra columns. The
+  voltage-grid audit explicitly leaves extra values opaque, and the BOSCH adapter
+  decodes only its declared identity fields. See each tool's selected-column,
+  blank-line and numeric-validation contract.
 - Interpolation is local to adjacent measured samples, not a physical device model. Static
   `I/V` is not differential `dI/dV`, conductivity, or proof of Ohmic conduction.
 - Constant-current extraction uses linear signed current versus VGS, not
@@ -282,18 +297,20 @@ interpretation remain the user's responsibility; every row stays auditable.
 ## Verification
 
 The original eight tools have been executed with **Python 3.12.14 and 3.13.5
-on Linux**. The new BOSCH metadata tool has been executed on **Python 3.12.14**.
+on Linux**. The BOSCH metadata and voltage-grid audit tools have been executed on
+**Python 3.12.14**.
 The source targets Python 3.10+, but Python 3.10/3.11 and other versions or
 operating systems remain unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all nine isolated tool suites plus the
+Run `python3 run_tests.py` to execute all ten isolated tool suites plus the
 end-to-end example suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
 fixed bias/temperature declarations, signed Hall fits and residuals, user-windowed
 base-10 transfer fits and selection audits, exact
-coordinate edge partitions and shared sample identities, exact signed I–V path
+coordinate edge partitions and shared sample identities, exact voltage-grid
+coverage and opaque-response noninterference, exact signed I–V path
 integrals with explicit branch ownership and voltage-closure/numeric-range gates, missing and
 invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.

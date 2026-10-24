@@ -19,6 +19,7 @@ behavior, not measurement accuracy, physical mechanisms, or device performance.
 | Transfer sweeps with known source-referenced biases and temperature | [Current-criterion Vth](../tools/vth-constant-current/README.md) | Signed VGS where signed ID reaches your declared current criterion. |
 | Signed transverse voltage versus magnetic flux density with fixed current, temperature and known wiring/field axis | [Hall response](../tools/hall-response/README.md) | Descriptive signed slope/intercept and residuals; current-normalized apparent sensitivity only at nonzero current. |
 | Transfer sweeps with a scientifically justified, explicitly chosen voltage window | [Transfer log-slope](../tools/transfer-log-slope/README.md) | Descriptive log10-current slope and labeled reciprocal, not a certified subthreshold swing. |
+| Declared I–V sweeps whose voltage-coordinate coverage needs comparison | [I–V voltage-grid audit](../tools/iv-grid-audit/README.md) | Exact duplicate coordinates and unequal grids within explicit condition/branch labels; missing means absent from the observed union, with response values opaque. |
 | Ordered voltage or magnetic-flux-density samples whose direction changes need inspection | [Sweep segment audit](../tools/sweep-segments/README.md) | Exact contiguous edge runs and shared-endpoint identities; no inferred chronology or automatically valid physical branches. |
 | Complete ordered current/voltage loops with explicit device/condition/cycle/replicate and outgoing-edge branch labels | [I–V signed-path integral](../tools/iv-loop-integral/README.md) | Signed trapezoidal I dV in A·V, exact voltage closure and complete edge audit; not energy or proof of intrinsic hysteresis. |
 | Declared HRS/LRS I–V branches plus complete device and condition records | [RRAM feature example](../examples/measurement-to-features/README.md) | A strict two-tool workflow ending in one descriptive feature row per device. |
@@ -34,9 +35,10 @@ and none of these workflows trains or validates an ML model.
 ## 2. Adapt an instrument export without losing its meaning
 
 Keep the original export unchanged. Make a separate, documented adapter output
-with exactly the selected tool's columns. Extra columns are rejected, so retain
-settings and raw-to-adapted row mappings in a separate measurement record rather
-than silently throwing them away. Record your adapter version, unit conversion,
+following the selected tool's column contract. Measurement extractors reject extra
+columns, so retain settings and raw-to-adapted row mappings in a separate record
+rather than silently throwing them away. The voltage-grid audit instead permits
+extra columns but leaves their values opaque, including response/target values. Record your adapter version, unit conversion,
 selected acquisition segments, command arguments, and known limitations.
 
 Before running, resolve these questions from actual acquisition/sample records:
@@ -550,8 +552,8 @@ qualification. No dataset is downloaded and no target or sensor array is decoded
 python3 run_tests.py
 ```
 
-The runner includes nine isolated tool suites, including the I–V path integral
-and BOSCH identity audit, plus both feature-workflow suites. Consult the test
+The runner includes ten isolated tool suites, including the I–V path integral,
+BOSCH identity audit and voltage-grid audit, plus both feature-workflow suites. Consult the test
 runner output for the exact current test counts.
 The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain

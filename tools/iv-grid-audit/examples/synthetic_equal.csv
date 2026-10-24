@@ -1,0 +1,7 @@
+lot,wafer,device,condition,sweep,branch,sample_id,voltage,current,target
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_1,forward,p1,0,opaque_response,uninspected_label
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_1,forward,p2,0.5,NaN,not_a_number
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_1,forward,p3,1,opaque_response,uninspected_label
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_2,forward,p1,1.0,opaque_response,uninspected_label
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_2,forward,p2,0.50,opaque_response,uninspected_label
+invented_lot,invented_wafer,invented_device,gate_protocol,repeat_2,forward,p3,-0,opaque_response,uninspected_label
