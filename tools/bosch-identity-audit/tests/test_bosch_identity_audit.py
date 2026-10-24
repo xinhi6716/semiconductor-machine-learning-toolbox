@@ -358,6 +358,97 @@ raise SystemExit(audit.main(sys.argv[2:]))
         self.assertEqual(run.stderr,
                          "Audit failed: input/output/serialization error. No complete report claimed.\n")
 
+    def test_normal_error_diagnostic_stays_open_and_exact(self):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            result = audit.main([])
+        self.assertEqual(result, 2)
+        self.assertFalse(stderr.closed)
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertEqual(stderr.getvalue(),
+                         "Audit failed: Invalid command-line options; use --help. No complete report claimed.\n")
+
+    def test_failed_stderr_does_not_mask_input_or_stdout_error(self):
+        for phase in ("write", "flush"):
+            for error_type in (OSError, ValueError):
+                for original_error in ("input", "stdout"):
+                    with self.subTest(phase=phase, error=error_type, original=original_error):
+                        class BrokenDiagnostic:
+                            closed = False
+                            def write(self, value):
+                                if phase == "write": raise error_type("private_secret")
+                                return len(value)
+                            def flush(self): raise error_type("private_secret")
+                            def close(self):
+                                self.closed = True
+                                raise error_type("private_secret")
+                        class BrokenOutput(io.StringIO):
+                            def write(self, value): raise OSError("private_secret")
+                        stdout = BrokenOutput() if original_error == "stdout" else io.StringIO()
+                        stderr = BrokenDiagnostic()
+                        args = ([str(self.input), "--channel-metadata", str(self.sidecar), "--stdout"]
+                                if original_error == "stdout" else [])
+                        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                            result = audit.main(args)
+                        self.assertEqual(result, 2)
+                        self.assertTrue(stderr.closed)
+                        if original_error == "input":
+                            self.assertEqual(stdout.getvalue(), "")
+
+    def test_closed_or_missing_stderr_does_not_use_stdout(self):
+        closed = io.StringIO()
+        closed.close()
+        for stderr in (closed, None):
+            with self.subTest(stderr=stderr):
+                stdout = io.StringIO()
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    result = audit.main([])
+                self.assertEqual(result, 2)
+                self.assertEqual(stdout.getvalue(), "")
+
+    @unittest.skipUnless(sys.platform.startswith("linux") and Path("/dev/full").exists(),
+                         "requires Linux /dev/full for a real diagnostic failure")
+    def test_cli_stderr_device_failure_keeps_exit_status(self):
+        with open("/dev/full", "wb") as stderr:
+            run = subprocess.run([sys.executable, str(ROOT / "bosch_identity_audit.py"),
+                                  str(self.input), "--channel-metadata", str(self.sidecar)],
+                                 stdout=subprocess.PIPE, stderr=stderr, timeout=10)
+        self.assertEqual(run.returncode, 2)
+        self.assertEqual(run.stdout, b"")
+
+    @unittest.skipUnless(sys.platform.startswith("linux") and Path("/dev/full").exists(),
+                         "requires Linux /dev/full for real simultaneous output failures")
+    def test_cli_stdout_and_stderr_device_failures_keep_exit_status(self):
+        with open("/dev/full", "wb") as sink:
+            run = subprocess.run([sys.executable, str(ROOT / "bosch_identity_audit.py"),
+                                  str(self.input), "--channel-metadata", str(self.sidecar), "--stdout"],
+                                 stdout=sink, stderr=sink, timeout=10)
+        self.assertEqual(run.returncode, 2)
+
+    @unittest.skipUnless(sys.platform.startswith("linux") and Path("/dev/full").exists(),
+                         "requires Linux /dev/full for a deferred diagnostic failure")
+    def test_buffered_stderr_failure_keeps_exit_status(self):
+        script = """
+import importlib.util, io, sys
+spec = importlib.util.spec_from_file_location("bosch_audit", sys.argv[1])
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+sys.stderr = io.TextIOWrapper(io.BufferedWriter(io.FileIO("/dev/full", "wb"),
+                                              buffer_size=1024 * 1024))
+raise SystemExit(audit.main([]))
+"""
+        run = subprocess.run([sys.executable, "-c", script, str(ROOT / "bosch_identity_audit.py")],
+                             capture_output=True, timeout=10)
+        self.assertEqual(run.returncode, 2, run.stderr)
+        self.assertEqual(run.stdout, b"")
+        self.assertEqual(run.stderr, b"")
+
+    def test_unexpected_diagnostic_exception_is_not_silenced(self):
+        class UnexpectedBug:
+            def write(self, value): raise RuntimeError("unexpected stream implementation bug")
+        with contextlib.redirect_stderr(UnexpectedBug()), self.assertRaises(RuntimeError):
+            audit.main([])
+
 
 if __name__ == "__main__":
     unittest.main()

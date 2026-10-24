@@ -360,6 +360,21 @@ def write_stdout(payload):
         raise
 
 
+def emit_failure(message):
+    """Best-effort stderr only; a broken diagnostic sink must not mask exit 2."""
+    stream = sys.stderr
+    if stream is None:
+        return  # print(file=None) would incorrectly fall back to stdout.
+    try:
+        print(message, file=stream, flush=True)
+    except (OSError, ValueError):
+        # Do not retry retained diagnostic bytes during interpreter shutdown.
+        try:
+            stream.close()
+        except (OSError, ValueError):
+            pass
+
+
 class Parser(argparse.ArgumentParser):
     def error(self, message):
         raise InputError("Invalid command-line options; use --help")
@@ -382,9 +397,9 @@ def main(argv=None):
             write_report(payload, args.output)
         return 0
     except InputError as error:
-        print("Audit failed: " + str(error) + ". No complete report claimed.", file=sys.stderr)
+        emit_failure("Audit failed: " + str(error) + ". No complete report claimed.")
     except (OSError, ValueError, UnicodeError, RecursionError):
-        print("Audit failed: input/output/serialization error. No complete report claimed.", file=sys.stderr)
+        emit_failure("Audit failed: input/output/serialization error. No complete report claimed.")
     return 2
 
 
