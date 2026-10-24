@@ -520,15 +520,39 @@ Predicting the ratio from the very resistances that define it is not evidence of
 scientific predictive performance. Six invented device rows cannot support a
 meaningful model evaluation, causal claim, endurance or lifetime estimate.
 
+## BOSCH process identity preparation before numerical learning
+
+The [BOSCH metadata audit](../tools/bosch-identity-audit/README.md) is a separate
+real-dataset-format adapter, not an I–V feature extractor or a model runner.
+Supply the exact nine-point CSV and an independently inspected label-only process
+sidecar with 31 ordered canonical names. The tool reads all CSV bytes for framing
+and hashing, decodes only four identity fields, keeps null and duplicate records,
+and maps channel names exactly across 31/44-width declarations. Missing labels
+stay explicit; no numeric values, verified physical joins or eligible cohort are
+produced. The sidecar is not verified against a native NetCDF file.
+
+```sh
+python3 tools/bosch-identity-audit/bosch_identity_audit.py \
+  tools/bosch-identity-audit/examples/synthetic_inventory.csv \
+  --channel-metadata tools/bosch-identity-audit/examples/synthetic_channels.json \
+  --output "$RUN_DIR/bosch-metadata.json"
+```
+
+Expected exit `0` includes deliberately incomplete/duplicate invented identities
+and a missing canonical channel. Review the full report, not just the exit code.
+See the tool README for its strict sidecar format, source attribution, unknown
+units/timing/physical identity, and separate responsibility for numeric cohort
+qualification. No dataset is downloaded and no target or sensor array is decoded.
+
 ## 7. Recheck the software
 
 ```sh
 python3 run_tests.py
 ```
 
-The current suite has 395 tests: 45 I–V, 53 RRAM, 47 TLM, 51 current-criterion Vth,
-50 Hall-response, 36 sweep-audit, 50 transfer-log-slope, 27 RRAM feature-workflow
-tests and 36 FET feature-workflow tests.
+The runner includes nine isolated tool suites, including the I–V path integral
+and BOSCH identity audit, plus both feature-workflow suites. Consult the test
+runner output for the exact current test counts.
 The commands and checks in this guide were run
 with Python 3.12.14 on Linux; other supported-source versions/platforms remain
 unverified here. The tests cover software contracts and invented examples, not

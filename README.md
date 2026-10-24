@@ -8,10 +8,12 @@ The usable core covers semiconductor I–V measurements, resistive RAM
 (RRAM/ReRAM), conventional linear transfer-length-method (TLM) contact
 measurements, constant-current transfer-sweep criteria, and Hall-response
 diagnostics, plus an ordered sweep-coordinate audit, user-windowed transfer
-log-current fitting, and an ordered I–V signed-path integral. All eight
-command-line tools
-use only the Python standard library, require explicit units and preserve
-measurement provenance. They make validation limits explicit instead of silently
+log-current fitting, and an ordered I–V signed-path integral. A ninth tool audits
+BOSCH plasma-etch identity and channel-name metadata. All
+nine command-line tools use only the Python standard library and preserve
+provenance. Measurement-reading tools require explicit units; the metadata-only
+BOSCH audit neither requires nor verifies physical units. They make validation
+limits explicit instead of silently
 repairing questionable measurements.
 
 **Current scope:** feature preprocessing and descriptive measurement summaries.
@@ -74,6 +76,12 @@ All included measurements are invented software-test fixtures.
    disclose unequal current endpoints and signed cancellation. No added closure,
    unsigned lobe area, physical-energy calculation or intrinsic-hysteresis claim.
 
+9. **[BOSCH Identity and Channel-Name Audit](tools/bosch-identity-audit/README.md)**
+   Inventory nullable identities from the BOSCH v1 nine-point CSV while keeping
+   other value fields opaque. Align explicit 31/44-column metadata by exact name,
+   preserve duplicates/missing labels and report only candidate name joins.
+   No dataset download, NetCDF decoder, target eligibility or automatic exclusions.
+
 ## Quick start
 
 For tool selection, adapting laboratory CSV exports, and checked end-to-end
@@ -123,11 +131,18 @@ python3 tools/iv-loop-integral/iv_loop_integral.py \
   --voltage-unit V --current-unit uA \
   --accept-supplied-path-assumptions --stdout
 
+python3 tools/bosch-identity-audit/bosch_identity_audit.py \
+  tools/bosch-identity-audit/examples/synthetic_inventory.csv \
+  --channel-metadata tools/bosch-identity-audit/examples/synthetic_channels.json \
+  --stdout
+
 python3 run_tests.py
 ```
 
-The I–V, TLM, threshold-criterion, Hall-response, sweep-audit, transfer-log-slope
-and I–V signed-path quick-start fixtures exit `0`.
+The I–V, TLM, threshold-criterion, Hall-response, sweep-audit, transfer-log-slope,
+I–V signed-path and BOSCH metadata quick-start fixtures exit `0`. The BOSCH
+audit retains incomplete/duplicate records and missing labels even on exit `0`;
+it does not select an eligible scientific cohort.
 The RRAM fixture deliberately includes missing/invalid pairs and exits `1` while producing its diagnostic JSON report; this is expected,
 not a crash. The test runner exits `0` when its software tests pass.
 
@@ -142,8 +157,8 @@ Consult each tool's README for exact exit-status semantics: `0` and `1` reflect
 that tool's documented checks and exclusions, not a shared scientific-quality
 rating. All use `2` for a fatal input/CLI/I/O error. A report can contain useful
 features and exclusions together: inspect its counts and warnings, not just
-whether JSON was produced. The sweep audit uses only `0` (complete audit, not
-scientific validation) and `2`; it never excludes samples or uses status `1`.
+whether JSON was produced. The sweep and BOSCH metadata audits use only `0` (complete audit, not
+scientific validation) and `2`; neither selects a cohort or uses status `1`.
 A write failure may leave an incomplete new file; discard it after a
 fatal exit. None of the programs sends data anywhere or changes the input file.
 
@@ -266,12 +281,13 @@ interpretation remain the user's responsibility; every row stays auditable.
 
 ## Verification
 
-**Python 3.12.14 and 3.13.5 on Linux** have been executed and verified locally.
+The original eight tools have been executed with **Python 3.12.14 and 3.13.5
+on Linux**. The new BOSCH metadata tool has been executed on **Python 3.12.14**.
 The source targets Python 3.10+, but Python 3.10/3.11 and other versions or
 operating systems remain unverified. **CI is not configured**: this distribution includes no active
 GitHub Actions workflow and starts no hosted or paid compute jobs.
 
-Run `python3 run_tests.py` to execute all eight isolated tool suites plus the
+Run `python3 run_tests.py` to execute all nine isolated tool suites plus the
 end-to-end example suites. They cover
 unit normalization, numerical boundaries, strict schemas, device/branch/state
 isolation, TLM equations and grouped fits, signed current-criterion crossings,
@@ -282,7 +298,8 @@ integrals with explicit branch ownership and voltage-closure/numeric-range gates
 invalid data, strict feature-table
 joins, repeated-cycle aggregation, deliberate output, and no-overwrite safety.
 Passing these tests establishes software behavior on the tested runtime, not
-hardware accuracy, scientific validity, or real-device performance.
+hardware accuracy, scientific validity, or real-device performance. Source-level
+Python 3.10+ compatibility does not mean all those versions were executed.
 
 ## Roadmap
 
@@ -308,6 +325,8 @@ name. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE). Original software and synthetic fixtures. Background references
+[MIT](LICENSE). Original software and synthetic fixtures. The BOSCH adapter
+references a separately licensed CC BY 4.0 dataset without redistributing its
+source payloads; see its attribution section. Background references
 linked in the tool documentation explain measurement context; their data and
 figures are not redistributed here.
